@@ -1,6 +1,8 @@
 package util
 
 import (
+	"reflect"
+
 	"github.com/ugorji/go/codec"
 )
 
@@ -11,15 +13,15 @@ func init() {
 }
 
 // encode struct to msgpack format
-func MsgEncode(v interface{}) string {
-	msg := []byte{}
+func MsgEncode(v interface{}) (msg []byte, err error) {
+	msg = []byte{}
 	enc := codec.NewEncoderBytes(&msg, &mh)
-	enc.Encode(v)
-	return string(msg)
+	err = enc.Encode(v)
+	return
 }
 
 // decode struct from msgpack format
-func MsgDecode(msg string, v interface{}) error {
-	dec := codec.NewDecoderBytes([]byte(msg), &mh)
+func MsgDecode(msg []byte, v interface{}) error {
+	dec := codec.NewDecoderBytes(msg, &mh)
 	return dec.Decode(&v)
 }
