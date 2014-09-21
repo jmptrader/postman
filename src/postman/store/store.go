@@ -206,11 +206,9 @@ func (st *store) RPush(key string, items []string) (left int, err error) {
 }
 
 // Remove and return from the left. return err if not found
-func (st *store) lPop(key string, lockNeed bool) (item string, err error) {
-	if lockNeed {
-		st.worldLock.Lock()
-		defer st.worldLock.Unlock()
-	}
+func (st *store) lPop(key string) (item string, err error) {
+	st.worldLock.Lock()
+	defer st.worldLock.Unlock()
 	currentItems := st.members(key)
 	if len(currentItems) > 0 {
 		item = currentItems[0]
@@ -222,7 +220,7 @@ func (st *store) lPop(key string, lockNeed bool) (item string, err error) {
 }
 
 func (st *store) BLPOP(key string, timeout time.Duration) (item string, err error) {
-	item, err = st.lPop(key, true)
+	item, err = st.lPop(key)
 	if err == nil {
 		return
 	}
@@ -230,5 +228,5 @@ func (st *store) BLPOP(key string, timeout time.Duration) (item string, err erro
 	if err != nil {
 		return
 	}
-	return st.lPop(key, true)
+	return st.lPop(key)
 }

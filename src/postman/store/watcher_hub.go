@@ -24,7 +24,7 @@ func newWatchHub() *watcherHub {
 
 func (wh *watcherHub) watch(key string, timeout time.Duration) error {
 	if _, ok := wh.watchers[key]; ok {
-		panic("key can not watch by muti wathers currently")
+		panic("key can not watch by muti watchers currently")
 	}
 	defer delete(wh.watchers, key)
 	wh.watchers[key] = &watcher{make(chan bool, 1)}
