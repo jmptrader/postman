@@ -19,20 +19,28 @@ import (
 	"postman/store"
 )
 
+const (
+	commandPrefix = "["
+	commandSep    = "|"
+	commandSuffix = "]"
+)
+
+type action struct {
+	ArgsSt  interface{}
+	Handler *func(interface{}) (string, error)
+}
+
 type Client struct {
 	Id          string
 	Secret      string
 	Cert        tls.Certificate
 	Remote      string
 	RequestChan chan string
+	actionMap   map[string]*action
 	Timeout     time.Duration
 }
 
 func createClient() (*Client, error) {
-
-}
-
-func (c *Client) handle(reply string) {
 
 }
 
@@ -41,6 +49,26 @@ func (c *Client) Request(command Command) {
 }
 
 func (c *Client) Server() {
+
+}
+
+func (c *Client) Register(action string, argsSt interface{}, handler *func(interface{}) (string, error)) {
+	_, ok = c.actionMap[action]
+	if ok {
+		panic("register action can not be the same")
+	}
+	c.actionMap[action] = &action{
+		ArgsSt:  argsSt,
+		Handler: handler,
+	}
+}
+
+func (c *Client) handle(reply string) {
+	commandArr = strings.SplitN(reply, commandSep, 3)
+
+}
+
+func (c *Client) server() {
 	defer conn.Close()
 	config := tls.Config{
 		Certificates:       []tls.Certificate{c.Cert},
@@ -65,12 +93,26 @@ func (c *Client) Server() {
 	}()
 	reply := make([]byte, 300)
 	var replyStr, _reply string
+	var hasPrefix, hasSuffix = false, false
 	for {
 		n, err = conn.Read(reply)
 		if n == 0 || err != nil {
 			return
 		}
+		// parse command and send to handle
 		_reply = string(reply[:n])
-		c.handle()
+		if strings.HasPrefix(_reply, commandPrefix) {
+			_reply = strings.TrimPrefix(_reply, commandPrefix)
+			hasPrefix = true
+		}
+		if strings.HasSuffix(_reply, commandSuffix) {
+			_reply = strings.TrimSuffix(_reply, commandSuffix)
+			hasSuffix = true
+		}
+		replyStr += _reply
+		if hasPrefix && hasSuffix {
+			c.handle(replyStr)
+			hasPrefix, hasSuffix, replyStr = false, false, ""
+		}
 	}
 }
