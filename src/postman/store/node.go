@@ -1,6 +1,7 @@
 package store
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"path"
@@ -72,6 +73,10 @@ func loadKV(store *store, key string) (n *node, err error) {
 	pt := pathByKey(store, key)
 	data, err := ioutil.ReadFile(pt)
 	if err != nil {
+		return
+	}
+	if len(data) < 1 {
+		err = errors.New("empty file found")
 		return
 	}
 	value := util.Decrypt(store.SecretKey, data)

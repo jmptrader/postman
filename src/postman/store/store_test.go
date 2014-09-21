@@ -3,6 +3,7 @@ package store
 import (
 	"os"
 	"testing"
+	"time"
 )
 
 func init() {
@@ -71,6 +72,58 @@ func TestSRem(t *testing.T) {
 	if s.Size("test1") != 0 {
 		t.Log(s.Members("test1"))
 		t.Error("SSize work unexpected")
+	}
+}
+
+func TestPush(t *testing.T) {
+	s.Add("test2", "1")
+	s.LPush("test2", []string{"-1", "0"})
+	s.RPush("test2", []string{"2", "3"})
+	if s.Size("test2") != 5 {
+		t.Log(s.Members("test2"))
+		t.Error("push work unexpected")
+	}
+	if s.Members("test2")[0] != "-1" && s.Members("test2")[4] != "3" {
+		t.Log(s.Members("test2"))
+		t.Error("push work unexpected")
+	}
+}
+
+func TestPop(t *testing.T) {
+	s.LPush("test3", []string{"-1", "0"})
+	s.RPush("test3", []string{"2", "3"})
+	reply, _ := s.BLPOP("test3", time.Microsecond)
+	if reply != "-1" {
+		t.Log(s.Members("test3"))
+		t.Error("pop work unexpected")
+	}
+}
+
+func TestPopWithBlock(t *testing.T) {
+	go func() {
+		wait := time.NewTimer(time.Millisecond)
+		<-wait.C
+		s.LPush("test4", []string{"-1", "0"})
+		s.RPush("test4", []string{"2", "3"})
+	}()
+	reply, err := s.BLPOP("test4", time.Second)
+	if reply != "-1" {
+		t.Log(reply, s.Members("test4"), err)
+		t.Error("BLOCK work unexpected")
+	}
+}
+
+func TestPopWithBlockAndTimeout(t *testing.T) {
+	go func() {
+		wait := time.NewTimer(time.Millisecond * 100)
+		<-wait.C
+		s.LPush("test5", []string{"-1", "0"})
+		s.RPush("test5", []string{"2", "3"})
+	}()
+	_, err := s.BLPOP("test5", time.Millisecond)
+	if err == nil {
+		t.Log(s.Members("test5"), err)
+		t.Error("BLOCK work unexpected")
 	}
 }
 

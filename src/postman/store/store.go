@@ -27,17 +27,19 @@ type Store interface {
 }
 
 type store struct {
-	RootPath  string
-	SecretKey []byte
-	worldLock sync.RWMutex
-	keymap    map[string]bool
+	RootPath   string
+	SecretKey  []byte
+	worldLock  sync.RWMutex
+	keymap     map[string]bool
+	watcherHub *watcherHub
 }
 
 func New(rootPath string, secretKey string) Store {
 	s := &store{
-		RootPath:  rootPath,
-		SecretKey: []byte(secretKey),
-		keymap:    map[string]bool{},
+		RootPath:   rootPath,
+		SecretKey:  []byte(secretKey),
+		keymap:     map[string]bool{},
+		watcherHub: newWatchHub(),
 	}
 	for _, key := range listAllKey(s) {
 		s.keymap[key] = true
@@ -171,14 +173,62 @@ func (st *store) Size(key string) int {
 	return len(st.members(key))
 }
 
+// push a new item to the left of a list
 func (st *store) LPush(key string, items []string) (left int, err error) {
+	st.worldLock.Lock()
+	defer func() {
+		st.worldLock.Unlock()
+		st.watcherHub.notify(key)
+	}()
+	currentItems := st.members(key)
+	err = st.setList(key, append(items, currentItems...))
+	if err != nil {
+		return
+	}
+	left = len(st.members(key))
 	return
 }
 
+// push a new item to the right of a list
 func (st *store) RPush(key string, items []string) (left int, err error) {
+	st.worldLock.Lock()
+	defer func() {
+		st.worldLock.Unlock()
+		st.watcherHub.notify(key)
+	}()
+	currentItems := st.members(key)
+	err = st.setList(key, append(currentItems, items...))
+	if err != nil {
+		return
+	}
+	left = len(st.members(key))
+	return
+}
+
+// Remove and return from the left. return err if not found
+func (st *store) lPop(key string, lockNeed bool) (item string, err error) {
+	if lockNeed {
+		st.worldLock.Lock()
+		defer st.worldLock.Unlock()
+	}
+	currentItems := st.members(key)
+	if len(currentItems) > 0 {
+		item = currentItems[0]
+		st.setList(key, currentItems[1:])
+		return
+	}
+	err = errors.New("No record found")
 	return
 }
 
 func (st *store) BLPOP(key string, timeout time.Duration) (item string, err error) {
-	return
+	item, err = st.lPop(key, true)
+	if err == nil {
+		return
+	}
+	err = st.watcherHub.watch(key, timeout)
+	if err != nil {
+		return
+	}
+	return st.lPop(key, true)
 }
