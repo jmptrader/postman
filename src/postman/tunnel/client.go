@@ -1,7 +1,5 @@
 package tunnel
 
-// client => [53ff21479560ce464d000001|dkim-query|{"domain": "open.jianxin.io"}]
-// server => [53ff21479560ce464d000001|response|{"code": "200"}]
 // TODO:
 // client 发出请求后，请求内容不销毁，放在内存/文件中，等待收到 response 后再做销毁
 // 否则超时后进行重新发送
@@ -21,7 +19,6 @@ import (
 
 const (
 	commandPrefix = "["
-	commandSep    = "|"
 	commandSuffix = "]"
 )
 
@@ -44,18 +41,18 @@ func createClient() (*Client, error) {
 
 }
 
-func (c *Client) Request(command Command) {
+func (c *Client) Server() {
 
 }
 
-func (c *Client) Server() {
+func (c *Client) Request(action string, args interface{}) {
 
 }
 
 func (c *Client) Register(action string, argsSt interface{}, handler *func(interface{}) (string, error)) {
 	_, ok = c.actionMap[action]
 	if ok {
-		panic("register action can not be the same")
+		log.Fatal("register action can not be the same")
 	}
 	c.actionMap[action] = &action{
 		ArgsSt:  argsSt,
@@ -64,17 +61,26 @@ func (c *Client) Register(action string, argsSt interface{}, handler *func(inter
 }
 
 func (c *Client) handle(reply string) {
-	commandArr = strings.SplitN(reply, commandSep, 3)
+	command := receiveCommand(c, reply)
+	message, err := command.Handler(command.Args)
+	if err != nil {
+		command.Response("500", err.Error())
+		return
+	}
+	command.Response("200", message)
+}
+
+func (c *Client) setRequestFinished(id string) {
 
 }
 
 func (c *Client) server() {
-	defer conn.Close()
 	config := tls.Config{
 		Certificates:       []tls.Certificate{c.Cert},
 		InsecureSkipVerify: true,
 	}
 	conn, err := tls.Dial("tcp", c.Remote, &config)
+	defer conn.Close()
 	if err != nil {
 		log.Fatalf("client: dial: %s", err)
 	}
@@ -111,7 +117,7 @@ func (c *Client) server() {
 		}
 		replyStr += _reply
 		if hasPrefix && hasSuffix {
-			c.handle(replyStr)
+			go c.handle(replyStr)
 			hasPrefix, hasSuffix, replyStr = false, false, ""
 		}
 	}
