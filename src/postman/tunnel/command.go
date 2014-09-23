@@ -1,6 +1,7 @@
 package tunnel
 
 import (
+	"log"
 	"strings"
 
 	"postman/util"
@@ -15,30 +16,30 @@ type Command struct {
 	Id      string
 	Action  string
 	Args    interface{}
-	Handler *func(interface{}) (string, error)
+	Handler func(interface{}) (string, error)
 	client  *Client
 }
 
 // create command with action and args
-func newCommand(client *Command, action string, args interface{}) *Command {
+func newCommand(client *Client, action string, args interface{}) *Command {
 	return &Command{
 		Id:     util.RandSeq(16),
 		Action: action,
 		Args:   args,
-		client: &client,
+		client: client,
 	}
 }
 
 // parse request string to command struct
-func receiveCommand(client *Command, command string) (c *Command) {
-	commandArr := strings.SplitN(reply, commandSep, 3)
+func receiveCommand(client *Client, command string) (c *Command) {
+	commandArr := strings.SplitN(command, commandSep, 3)
 	c = &Command{
 		Id:     commandArr[0],
 		Action: commandArr[1],
-		client: &client,
+		client: client,
 	}
 	if c.Action == "response" {
-		c.setRequestFinished(c.Id)
+		client.setRequestFinished(c.Id)
 		return
 	}
 	actionSt, ok := client.actionMap[c.Action]
@@ -46,7 +47,7 @@ func receiveCommand(client *Command, command string) (c *Command) {
 		c.Response("404", "action "+c.Action+" not found in client")
 		return
 	}
-	args := new(actionSt.ArgsSt)
+	args := actionSt.Instance()
 	util.MsgDecode([]byte(commandArr[2]), args)
 	c.Args = args
 	c.Handler = actionSt.Handler
@@ -55,8 +56,11 @@ func receiveCommand(client *Command, command string) (c *Command) {
 
 // parse struct to request buffer string
 func (cm *Command) String() string {
-	args := util.MsgEncode(cm.Args)
-	return strings.Join([3]string{cm.Id, cm.Action, args}, commandSep)
+	args, err := util.MsgEncode(cm.Args)
+	if err != nil {
+		log.Fatalf("parse interface to msg %s", err.Error())
+	}
+	return strings.Join([]string{cm.Id, cm.Action, string(args)}, commandSep)
 }
 
 // client => [53ff21479560ce464d000001|dkim-query|{"domain": "open.jianxin.io"}]
@@ -68,5 +72,5 @@ func (cm *Command) Response(code string, message string) {
 		Action: "response",
 		Args:   args,
 	}
-	cm.client.Request(response.String())
+	cm.client.request(response.String())
 }

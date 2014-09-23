@@ -8,13 +8,13 @@ package tunnel
 
 import (
 	"crypto/tls"
-	"crypto/x509"
+	// "crypto/x509"
 	"io"
 	"log"
 	"strings"
 	"time"
 
-	"postman/store"
+	// "postman/store"
 )
 
 const (
@@ -22,9 +22,9 @@ const (
 	commandSuffix = "]"
 )
 
-type action struct {
-	ArgsSt  interface{}
-	Handler *func(interface{}) (string, error)
+type Action struct {
+	Instance func() interface{}
+	Handler  func(interface{}) (string, error)
 }
 
 type Client struct {
@@ -33,12 +33,14 @@ type Client struct {
 	Cert        tls.Certificate
 	Remote      string
 	RequestChan chan string
-	actionMap   map[string]*action
+	actionMap   map[string]*Action
 	Timeout     time.Duration
 }
 
 func createClient() (*Client, error) {
-
+	return &Client{
+		actionMap: map[string]*Action{},
+	}, nil
 }
 
 func (c *Client) Server() {
@@ -49,14 +51,18 @@ func (c *Client) Request(action string, args interface{}) {
 
 }
 
-func (c *Client) Register(action string, argsSt interface{}, handler *func(interface{}) (string, error)) {
-	_, ok = c.actionMap[action]
+func (c *Client) request(request string) {
+
+}
+
+func (c *Client) Register(action string, instance func() interface{}, handler func(interface{}) (string, error)) {
+	_, ok := c.actionMap[action]
 	if ok {
 		log.Fatal("register action can not be the same")
 	}
-	c.actionMap[action] = &action{
-		ArgsSt:  argsSt,
-		Handler: handler,
+	c.actionMap[action] = &Action{
+		Instance: instance,
+		Handler:  handler,
 	}
 }
 
@@ -101,7 +107,7 @@ func (c *Client) server() {
 	var replyStr, _reply string
 	var hasPrefix, hasSuffix = false, false
 	for {
-		n, err = conn.Read(reply)
+		n, err := conn.Read(reply)
 		if n == 0 || err != nil {
 			return
 		}
