@@ -9,6 +9,7 @@ _obj
 _test
 _tmp
 bin
+node_modules
 
 # Architecture specific extensions/prefixes
 *.[568vq]
@@ -25,3 +26,4 @@ _cgo_export.*
 _testmain.go
 *.exe
 *.test
+config.json
