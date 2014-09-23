@@ -21,17 +21,3 @@ func TestCommandGenerate(t *testing.T) {
 	}
 	t.Log(a.String())
 }
-
-func TestCommandParse(t *testing.T) {
-	cl.Register("Demo", func() interface{} {
-		return testSt{}
-	}, func(args interface{}) (string, error) {
-		return args.(testSt).name, nil
-	})
-	_b := receiveCommand(cl, b.String())
-	r, err := _b.Handler(_b.Args)
-	if err != nil && r != "vt" {
-		t.Log(_b)
-		t.Fatal("fail to parse command")
-	}
-}

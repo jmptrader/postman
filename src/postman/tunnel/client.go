@@ -1,30 +1,23 @@
 package tunnel
 
-// TODO:
-// client 发出请求后，请求内容不销毁，放在内存/文件中，等待收到 response 后再做销毁
-// 否则超时后进行重新发送
-// command 主要负责封装请求的解析和格式化
-// 考虑使用钩子/反射 将请求与 action 绑定，并设定请求 args 类型并自定解析作为参数传递
-
 import (
 	"crypto/tls"
 	// "crypto/x509"
 	"io"
 	"log"
-	"strings"
 	"time"
 
 	// "postman/store"
 )
 
 const (
-	commandPrefix = "["
-	commandSuffix = "]"
+	commandPrefix = "DATA"
+	commandSuffix = "END"
 )
 
 type Action struct {
 	Instance func() interface{}
-	Handler  func(interface{}) (string, error)
+	Handler  func(interface{})
 }
 
 type Client struct {
@@ -55,7 +48,7 @@ func (c *Client) request(request string) {
 
 }
 
-func (c *Client) Register(action string, instance func() interface{}, handler func(interface{}) (string, error)) {
+func (c *Client) Register(action string, instance func() interface{}, handler func(interface{})) {
 	_, ok := c.actionMap[action]
 	if ok {
 		log.Fatal("register action can not be the same")
@@ -68,12 +61,7 @@ func (c *Client) Register(action string, instance func() interface{}, handler fu
 
 func (c *Client) handle(reply string) {
 	command := receiveCommand(c, reply)
-	message, err := command.Handler(command.Args)
-	if err != nil {
-		command.Response("500", err.Error())
-		return
-	}
-	command.Response("200", message)
+	command.Handler(command.Args)
 }
 
 func (c *Client) setRequestFinished(id string) {
@@ -97,6 +85,7 @@ func (c *Client) server() {
 			// receive command via chan
 			// then send it
 			command = <-c.RequestChan
+			// TODO: Here need to add DATA and END
 			_, err := io.WriteString(conn, command)
 			if err != nil {
 				log.Printf("client: send %s: %s", command, err)
@@ -105,7 +94,7 @@ func (c *Client) server() {
 	}()
 	reply := make([]byte, 300)
 	var replyStr, _reply string
-	var hasPrefix, hasSuffix = false, false
+	var hasPrefix = false
 	for {
 		n, err := conn.Read(reply)
 		if n == 0 || err != nil {
@@ -113,18 +102,15 @@ func (c *Client) server() {
 		}
 		// parse command and send to handle
 		_reply = string(reply[:n])
-		if strings.HasPrefix(_reply, commandPrefix) {
-			_reply = strings.TrimPrefix(_reply, commandPrefix)
+		if _reply == commandPrefix {
 			hasPrefix = true
+			continue
 		}
-		if strings.HasSuffix(_reply, commandSuffix) {
-			_reply = strings.TrimSuffix(_reply, commandSuffix)
-			hasSuffix = true
+		if hasPrefix && _reply == commandSuffix {
+			go c.handle(replyStr)
+			hasPrefix, replyStr = false, ""
+			continue
 		}
 		replyStr += _reply
-		if hasPrefix && hasSuffix {
-			go c.handle(replyStr)
-			hasPrefix, hasSuffix, replyStr = false, false, ""
-		}
 	}
 }

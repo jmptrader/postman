@@ -16,7 +16,7 @@ type Command struct {
 	Id      string
 	Action  string
 	Args    interface{}
-	Handler func(interface{}) (string, error)
+	Handler func(interface{})
 	client  *Client
 }
 
@@ -44,7 +44,7 @@ func receiveCommand(client *Client, command string) (c *Command) {
 	}
 	actionSt, ok := client.actionMap[c.Action]
 	if !ok {
-		c.Response("404", "action "+c.Action+" not found in client")
+		log.Printf("action %s not found in client", c.Action)
 		return
 	}
 	args := actionSt.Instance()
@@ -61,16 +61,4 @@ func (cm *Command) String() string {
 		log.Fatalf("parse interface to msg %s", err.Error())
 	}
 	return strings.Join([]string{cm.Id, cm.Action, string(args)}, commandSep)
-}
-
-// client => [53ff21479560ce464d000001|dkim-query|{"domain": "open.jianxin.io"}]
-// server => [53ff21479560ce464d000001|response|{"code": "200"}]
-func (cm *Command) Response(code string, message string) {
-	args := map[string]string{"code": code, "message": message}
-	response := Command{
-		Id:     cm.Id,
-		Action: "response",
-		Args:   args,
-	}
-	cm.client.request(response.String())
 }
