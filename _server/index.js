@@ -13,14 +13,12 @@ var options = {
 // start server and load core
 tls.createServer(options, function(cleartextStream) {
   sys.puts("TLS connection established: " + cleartextStream.remoteAddress);
-  // close remote client connection
-  cleartextStream.send = function() {
-    cleartextStream.socket.end();
-  }
 
   // load listeners
   global.cleartextStream = cleartextStream;
   require('./core');
+  // init connection info
+  cleartextStream.init && cleartextStream.init();
 
   cleartextStream.setEncoding('utf8');
   cleartextStream.pipe(cleartextStream);

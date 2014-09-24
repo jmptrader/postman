@@ -1,0 +1,7 @@
+{
+  "name": "postman_test_server",
+  "version": "0.0.1",
+  "dependencies": {
+    "msgpack": "*"
+  }
+}

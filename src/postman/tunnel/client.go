@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	// "postman/store"
+	"postman/store"
 )
 
 const (
@@ -27,12 +27,13 @@ type Client struct {
 	Remote      string
 	RequestChan chan string
 	actionMap   map[string]*Action
-	Timeout     time.Duration
+	store       *store.Store
 }
 
 func createClient() (*Client, error) {
 	return &Client{
-		actionMap: map[string]*Action{},
+		RequestChan: make(chan string, 10),
+		actionMap:   map[string]*Action{},
 	}, nil
 }
 
@@ -41,10 +42,6 @@ func (c *Client) Server() {
 }
 
 func (c *Client) Request(action string, args interface{}) {
-
-}
-
-func (c *Client) request(request string) {
 
 }
 

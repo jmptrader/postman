@@ -38,10 +38,6 @@ func receiveCommand(client *Client, command string) (c *Command) {
 		Action: commandArr[1],
 		client: client,
 	}
-	if c.Action == "response" {
-		client.setRequestFinished(c.Id)
-		return
-	}
 	actionSt, ok := client.actionMap[c.Action]
 	if !ok {
 		log.Printf("action %s not found in client", c.Action)
