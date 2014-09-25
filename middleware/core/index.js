@@ -1,5 +1,6 @@
 var path = require('path');
 var msgpack = require('msgpack');
+var sys = require('sys');
 
 const commandPrefix = "DATA";
 const commandSuffix = "END";
@@ -49,14 +50,12 @@ cleartextStream.command = function(action, args) {
   });
 };
 
-cleartextStream.addListener('data', function(body) {
-  var data = body.toString().trim();
-  console.log(data === commandPrefix, data == commandPrefix);
-  if (data === commandPrefix) {
+cleartextStream.addListener('data', function(data) {
+  if (data === commandPrefix + '\n') {
     cleartextStream.hasPrefix = true;
     return
   }
-  if (cleartextStream.hasPrefix && data === commandSuffix) {
+  if (cleartextStream.hasPrefix && data === commandSuffix + '\n') {
     Action.handle(cleartextStream.replyStr);
     cleartextStream.reset();
     cleartextStream.hasPrefix = false;
@@ -66,6 +65,7 @@ cleartextStream.addListener('data', function(body) {
 });
 
 cleartextStream.addListener('close', function() {
+  sys.puts("TLS connection closed");
   // TODO: warning should be raised to tell administrator: client closed.
   // all command in queue will resend after reconnect.
 });

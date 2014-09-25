@@ -37,7 +37,7 @@ func createClient() (*Client, error) {
 	}, nil
 }
 
-func (c *Client) Server() {
+func (c *Client) Serve() {
 
 }
 
@@ -61,11 +61,7 @@ func (c *Client) handle(reply string) {
 	command.Handler(command.Args)
 }
 
-func (c *Client) setRequestFinished(id string) {
-
-}
-
-func (c *Client) server() {
+func (c *Client) serve() {
 	config := tls.Config{
 		Certificates:       []tls.Certificate{c.Cert},
 		InsecureSkipVerify: true,
