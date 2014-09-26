@@ -2,12 +2,9 @@ package tunnel
 
 import (
 	"crypto/tls"
-	// "crypto/x509"
 	"io"
 	"log"
 	"time"
-
-	"postman/store"
 )
 
 const (
@@ -17,35 +14,36 @@ const (
 
 type Action struct {
 	Instance func() interface{}
-	Handler  func(interface{})
+	Handler  func(*Client, interface{})
+}
+
+type Config struct {
+	Id     string
+	Cert   tls.Certificate
+	Remote string
+	Secret string
 }
 
 type Client struct {
-	Id          string
-	Secret      string
-	Cert        tls.Certificate
-	Remote      string
+	config      Config
 	RequestChan chan string
 	actionMap   map[string]*Action
-	store       *store.Store
-}
-
-func createClient() (*Client, error) {
-	return &Client{
-		RequestChan: make(chan string, 10),
-		actionMap:   map[string]*Action{},
-	}, nil
 }
 
 func (c *Client) Serve() {
-
+	c.serve()
+	<-time.After(time.Second * 30)
+	c.Serve()
 }
 
 func (c *Client) Request(action string, args interface{}) {
-
+	command := newCommand(c, action, args)
+	for _, cmd := range []string{commandPrefix, command.String(), commandSuffix} {
+		c.RequestChan <- cmd
+	}
 }
 
-func (c *Client) Register(action string, instance func() interface{}, handler func(interface{})) {
+func (c *Client) Register(action string, instance func() interface{}, handler func(*Client, interface{})) {
 	_, ok := c.actionMap[action]
 	if ok {
 		log.Fatal("register action can not be the same")
@@ -58,15 +56,15 @@ func (c *Client) Register(action string, instance func() interface{}, handler fu
 
 func (c *Client) handle(reply string) {
 	command := receiveCommand(c, reply)
-	command.Handler(command.Args)
+	command.Handler(c, command.Args)
 }
 
 func (c *Client) serve() {
 	config := tls.Config{
-		Certificates:       []tls.Certificate{c.Cert},
+		Certificates:       []tls.Certificate{c.config.Cert},
 		InsecureSkipVerify: true,
 	}
-	conn, err := tls.Dial("tcp", c.Remote, &config)
+	conn, err := tls.Dial("tcp", c.config.Remote, &config)
 	defer conn.Close()
 	if err != nil {
 		log.Fatalf("client: dial: %s", err)
@@ -91,6 +89,7 @@ func (c *Client) serve() {
 	for {
 		n, err := conn.Read(reply)
 		if n == 0 || err != nil {
+			log.Printf("remote server: %s disconnect.\n Reconnect will start after 10 seconds.", c.config.Remote)
 			return
 		}
 		// parse command and send to handle

@@ -16,7 +16,7 @@ type Command struct {
 	Id      string
 	Action  string
 	Args    interface{}
-	Handler func(interface{})
+	Handler func(*Client, interface{})
 	client  *Client
 }
 

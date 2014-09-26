@@ -1,0 +1,12 @@
+[{
+    "name"        : "middleware",
+    "script"      : "index.js",
+    "instances"  : 1,
+    "port"       : 9002,
+    "error_file" : "./logs/child-err.log",
+    "out_file"   : "./logs/child-out.log",
+    "pid_file"   : "./logs/child.pid",
+    "env": {
+        "NODE_ENV": "production"
+    }
+}]
