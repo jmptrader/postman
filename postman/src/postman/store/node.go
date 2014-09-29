@@ -65,7 +65,7 @@ func removeByKey(store *store, key string) error {
 // destroy all db files
 func removeAllKey(store *store) error {
 	os.RemoveAll(store.RootPath)
-	return os.Mkdir(os.Getenv("POSTMAN_DB_DIR"), 0755)
+	return os.Mkdir(store.RootPath, 0755)
 }
 
 // loadKV load a Key-Value pair form file by key

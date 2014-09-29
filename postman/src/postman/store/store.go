@@ -9,6 +9,7 @@ import (
 	"postman/util"
 )
 
+// TODO add cache in mem for some certain keys
 type Store interface {
 	Keys(prefix string) []string
 

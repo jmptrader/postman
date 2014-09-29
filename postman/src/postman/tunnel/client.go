@@ -19,7 +19,7 @@ type Action struct {
 
 type Config struct {
 	Id     string
-	Cert   tls.Certificate
+	Conf   *tls.Config
 	Remote string
 	Secret string
 }
@@ -32,7 +32,7 @@ type Client struct {
 
 func (c *Client) Serve() {
 	c.serve()
-	<-time.After(time.Second * 30)
+	<-time.After(time.Second * 10)
 	c.Serve()
 }
 
@@ -60,15 +60,12 @@ func (c *Client) handle(reply string) {
 }
 
 func (c *Client) serve() {
-	config := tls.Config{
-		Certificates:       []tls.Certificate{c.config.Cert},
-		InsecureSkipVerify: true,
-	}
-	conn, err := tls.Dial("tcp", c.config.Remote, &config)
-	defer conn.Close()
+	conn, err := tls.Dial("tcp", c.config.Remote, c.config.Conf)
 	if err != nil {
-		log.Fatalf("client: dial: %s", err)
+		log.Printf("client: dial: %s.\nReconnect will start after 10 seconds.", err)
+		return
 	}
+	defer conn.Close()
 	log.Println("client: connected to: ", conn.RemoteAddr())
 	go func() {
 		var command string
@@ -89,7 +86,7 @@ func (c *Client) serve() {
 	for {
 		n, err := conn.Read(reply)
 		if n == 0 || err != nil {
-			log.Printf("remote server: %s disconnect.\n Reconnect will start after 10 seconds.", c.config.Remote)
+			log.Printf("remote server: %s disconnect.\nReconnect will start after 10 seconds.", c.config.Remote)
 			return
 		}
 		// parse command and send to handle

@@ -2,12 +2,10 @@ var fs = require('fs');
 var tls = require('tls');
 var sys = require('sys');
 
-configDir = process.env.POSTMAN_CONFIG_DIR;
-
 var options = {
   requestCert: true,
-  key: fs.readFileSync(configDir + '/ssl/private-key.pem'),
-  cert: fs.readFileSync(configDir + '/ssl/public-cert.pem')
+  key: fs.readFileSync('config/pems/private-key.pem'),
+  cert: fs.readFileSync('config/pems/public-cert.pem')
 }
 
 // start server and load core
