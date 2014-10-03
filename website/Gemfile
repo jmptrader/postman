@@ -1,0 +1,26 @@
+source 'https://rubygems.org'
+
+# Distribute your app as a gem
+# gemspec
+
+# Server requirements
+gem 'thin'
+
+# Project requirements
+gem 'rake'
+
+# Component requirements
+gem 'haml'
+gem 'dm-mysql-adapter'
+gem 'dm-validations'
+gem 'dm-timestamps'
+gem 'dm-migrations'
+gem 'dm-constraints'
+gem 'dm-aggregates'
+gem 'dm-types'
+gem 'dm-core'
+
+# Test requirements
+
+# Padrino Stable Gem
+gem 'padrino', '0.12.3'
