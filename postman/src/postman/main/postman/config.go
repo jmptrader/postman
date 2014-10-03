@@ -17,7 +17,6 @@ const (
 )
 
 type Config struct {
-	Id          string    `json:"postmanId"`
 	AuthSecret  string    `json:"authSecret"`
 	StoreSecret string    `json:"storeSecret"`
 	RemoteAddr  string    `json:"remoteAddr"`
@@ -72,7 +71,6 @@ func tunnelConfig() tunnel.Config {
 		InsecureSkipVerify: true,
 	}
 	return tunnel.Config{
-		Id:     config.Id,
 		Conf:   conf,
 		Remote: config.RemoteAddr,
 		Secret: config.AuthSecret,

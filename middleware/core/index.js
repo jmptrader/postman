@@ -1,6 +1,6 @@
 var path = require('path');
-var msgpack = require('msgpack');
 var sys = require('sys');
+var crypto = require('crypto');
 
 const commandPrefix = "DATA";
 const commandSuffix = "END";
@@ -11,61 +11,70 @@ global.Action = {
     this._actionMap[action] = callback;
   },
   handle: function(command) {
-    var action = command.split('|')[0];
+    var cmdAtt = command.split('|');
+    var id = cmdAtt[0];
+    var action = cmdAtt[1];
     if (!this._actionMap.hasOwnProperty(action)) {
       return
     }
-    var args = msgpack.unpack(command.substr(action.length));
+    var args = JSON.parse(command.substr(action.length + id.length + 2));
     this._actionMap[action].call(cleartextStream, args);
   }
 };
 
 // load all actions
 require("fs").readdirSync("./actions").forEach(function(file) {
-  if (path.extname(file) !== 'js') return;
-  require("./actions/" + file);
+  if (path.extname(file) !== '.js') return;
+  require("../actions/" + file);
 });
 
-cleartextStream.init = function() {
-  // TODO check client ip
-  // send auth require command
-  cleartextStream.reset();
-};
+// check client ip
+var init = function() {
+  var c = this;
+  Client.find({
+    where: {
+      ip: c.remoteAddress
+    }
+  }).success(function(client) {
+    if (!client) {
+      c.command('exit', {
+        "msg": 'client not found'
+      })
+      return;
+    }
+    // send auth require command
+    crypto.randomBytes(16, function(ex, buf) {
+      c.auth_key = buf.toString('hex').substr(0, 16);
+      c.client = client;
+      c.auth = false;
+      c.command('helo', {
+        auth_key: c.auth_key
+      });
+    });
+  });
+}
 
-cleartextStream.reset = function() {
-  cleartextStream.hasPrefix = false;
-  cleartextStream.replyStr = '';
-};
+module.exports = function() {
+  var c = cleartextStream;
+  init.call(c);
 
-// close remote client connection
-cleartextStream.end = function() {
-  cleartextStream.socket.end();
-};
+  // send command to client
+  c.command = function(action, args) {
+    crypto.randomBytes(16, function(ex, buf) {
+      var commandStr = ["+" + buf.toString('hex').substr(0, 16), action, JSON.stringify(args)].join('|');
+      c.write(commandStr + '\n');
+    });
+  };
 
-// send command to client
-cleartextStream.command = function(action, args) {
-  var commandStr = [action, msgpack.pack(args)].join('|');
-  [commandPrefix, commandStr, commandSuffix].forEach(function(buf) {
-    cleartextStream.write(buf);
+  // receive data and parse it
+  c.addListener('data', function(data) {
+    Action.handle(data.trim());
+  });
+
+  // trigger when client close
+  c.addListener('close', function() {
+    sys.puts("TLS connection closed");
+    // TODO: warning should be raised to tell administrator: client closed.
+    // all command in queue will resend after reconnect.
   });
 };
-
-cleartextStream.addListener('data', function(data) {
-  if (data === commandPrefix + '\n') {
-    cleartextStream.hasPrefix = true;
-    return
-  }
-  if (cleartextStream.hasPrefix && data === commandSuffix + '\n') {
-    Action.handle(cleartextStream.replyStr);
-    cleartextStream.reset();
-    cleartextStream.hasPrefix = false;
-    return
-  }
-  cleartextStream.replyStr += data;
-});
-
-cleartextStream.addListener('close', function() {
-  sys.puts("TLS connection closed");
-  // TODO: warning should be raised to tell administrator: client closed.
-  // all command in queue will resend after reconnect.
-});

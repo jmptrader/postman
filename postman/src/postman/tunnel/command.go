@@ -1,6 +1,8 @@
 package tunnel
 
 import (
+	"encoding/json"
+	"errors"
 	"log"
 	"strings"
 
@@ -11,7 +13,6 @@ const (
 	commandSep = "|"
 )
 
-// Todo: hanlder may need to be replace with interface{}
 type Command struct {
 	Id      string
 	Action  string
@@ -23,7 +24,7 @@ type Command struct {
 // create command with action and args
 func newCommand(client *Client, action string, args interface{}) *Command {
 	return &Command{
-		Id:     util.RandSeq(16),
+		Id:     "-" + util.RandSeq(16),
 		Action: action,
 		Args:   args,
 		client: client,
@@ -31,7 +32,7 @@ func newCommand(client *Client, action string, args interface{}) *Command {
 }
 
 // parse request string to command struct
-func receiveCommand(client *Client, command string) (c *Command) {
+func receiveCommand(client *Client, command string) (c *Command, err error) {
 	commandArr := strings.SplitN(command, commandSep, 3)
 	c = &Command{
 		Id:     commandArr[0],
@@ -41,10 +42,14 @@ func receiveCommand(client *Client, command string) (c *Command) {
 	actionSt, ok := client.actionMap[c.Action]
 	if !ok {
 		log.Printf("action %s not found in client", c.Action)
+		err = errors.New("action not found")
 		return
 	}
 	args := actionSt.Instance()
-	util.MsgDecode([]byte(commandArr[2]), args)
+	err = json.Unmarshal([]byte(commandArr[2]), args)
+	if err != nil {
+		return
+	}
 	c.Args = args
 	c.Handler = actionSt.Handler
 	return
@@ -52,7 +57,7 @@ func receiveCommand(client *Client, command string) (c *Command) {
 
 // parse struct to request buffer string
 func (cm *Command) String() string {
-	args, err := util.MsgEncode(cm.Args)
+	args, err := json.Marshal(cm.Args)
 	if err != nil {
 		log.Fatalf("parse interface to msg %s", err.Error())
 	}

@@ -2,6 +2,9 @@ var fs = require('fs');
 var tls = require('tls');
 var sys = require('sys');
 
+// require all models
+require('./core/model');
+
 var options = {
   requestCert: true,
   key: fs.readFileSync('config/pems/private-key.pem'),
@@ -14,9 +17,9 @@ tls.createServer(options, function(cleartextStream) {
 
   // load listeners
   global.cleartextStream = cleartextStream;
-  require('./core');
+
   // init connection info
-  cleartextStream.init && cleartextStream.init();
+  require('./core')();
 
   cleartextStream.setEncoding('utf8');
   cleartextStream.pipe(cleartextStream);
