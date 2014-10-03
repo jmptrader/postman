@@ -1,7 +1,7 @@
 {
-  "name": "postman-middleware",
-  "version": "0.0.1",
-  "dependencies": {
-    "sequelize": "*"
-  }
+    "name": "postman-middleware",
+    "version": "0.0.1",
+    "dependencies": {
+        "sequelize": "*"
+    }
 }

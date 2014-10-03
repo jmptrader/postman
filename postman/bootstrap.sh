@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export GOPATH=$GOPATH:"$PWD":"$PWD"/vendor
+export GOPATH=${GOPATH}:"$PWD":"$PWD"/vendor
 
 cd vendor
 # install dependences

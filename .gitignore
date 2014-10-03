@@ -10,6 +10,7 @@ _test
 _tmp
 bin
 node_modules
+.idea
 
 # Architecture specific extensions/prefixes
 *.[568vq]

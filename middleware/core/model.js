@@ -7,13 +7,13 @@ var database = require('../config/database');
 global.Model = Sequelize;
 
 global.model = new Sequelize(
-  database.database,
-  database.username,
-  database.password,
-  database
+    database.database,
+    database.username,
+    database.password,
+    database
 );
 
-require("fs").readdirSync("./models").forEach(function(file) {
-  if (path.extname(file) !== '.js') return;
-  require("../models/" + file);
+require("fs").readdirSync("./models").forEach(function (file) {
+    if (path.extname(file) !== '.js') return;
+    require("../models/" + file);
 });
