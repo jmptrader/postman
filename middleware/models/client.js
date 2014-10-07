@@ -5,5 +5,6 @@ global.Client = model.define('Client', {
             isIP: true
         }
     },
-    secret: Model.STRING
+    secret: Model.STRING,
+    status: Model.STRING
 });

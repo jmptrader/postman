@@ -30,6 +30,7 @@ type Client struct {
 	online      bool
 	buf         *bufio.ReadWriter
 	conn        *tls.Conn
+	name        *tls.Conn
 }
 
 func (c *Client) Serve() {
@@ -41,7 +42,7 @@ func (c *Client) Serve() {
 	}
 }
 
-func (c *Client) Secret(str string) string {
+func (c *Client) Auth(str string) string {
 	hasher := md5.New()
 	hasher.Write([]byte(c.config.Secret + str))
 	return hex.EncodeToString(hasher.Sum(nil))
@@ -106,7 +107,6 @@ func (c *Client) handleReq() {
 		// receive command via chan
 		// then send it
 		c.buf.Write([]byte(command))
-		c.buf.WriteByte('\n')
 		err := c.buf.Flush()
 		if err != nil {
 			log.Printf("client: send %s: %s", command, err)
@@ -114,11 +114,13 @@ func (c *Client) handleReq() {
 	}
 }
 
+// close conn from client
 func (c *Client) Close() {
 	c.online = false
 	c.conn.Close()
 }
 
+// start tls client and handshake
 func (c *Client) serve() {
 	conn, err := tls.Dial("tcp", c.config.Remote, c.config.Conf)
 	if err != nil {

@@ -1,0 +1,14 @@
+development: &defaults
+  adapter: mysql
+  database: jianxin
+  username: root
+  password: 123456
+  host: dev.jianxin.io
+
+test:
+  <<: *defaults
+  database: example_test
+
+production:
+  <<: *defaults
+  database: jianxin_production

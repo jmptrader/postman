@@ -57,23 +57,20 @@ var init = function () {
 module.exports = function () {
     var c = cleartextStream;
     init.call(c);
-
     // send command to client
     c.command = function (action, args) {
-        crypto.randomBytes(16, function (ex, buf) {
-            var commandStr = ["+" + buf.toString('hex').substr(0, 16), action, JSON.stringify(args)].join('|');
+        crypto.randomBytes(4, function (ex, buf) {
+            var commandStr = ["+" + buf.toString('hex').substr(0, 4), action, JSON.stringify(args)].join('|');
             c.write(commandStr + '\n');
         });
     };
-
     // receive data and parse it
     c.addListener('data', function (data) {
         Action.handle(data.trim());
     });
-
     // trigger when client close
     c.addListener('close', function () {
-        sys.puts("TLS connection closed");
+        sys.puts('TLS connection ' + c.client.ip + 'closed');
         // TODO: warning should be raised to tell administrator: client closed.
         // all command in queue will resend after reconnect.
     });

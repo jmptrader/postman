@@ -248,7 +248,7 @@ func sendMail(addr string, local string, from string, to string, msg []byte, tls
 }
 
 // random return send result
-func debugSendMail(addr string, local string, from string, to string) error {
+func debugSendMail(_ string, _ string, from string, to string) error {
 	log.Printf("now is send mail from %s to %s", from, to)
 	randNum := Rand(0, 100)
 	if randNum < 90 {

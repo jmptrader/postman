@@ -9,7 +9,7 @@ var options = {
     requestCert: true,
     key: fs.readFileSync('config/pems/private-key.pem'),
     cert: fs.readFileSync('config/pems/public-cert.pem')
-}
+};
 
 // start server and load core
 tls.createServer(options, function (cleartextStream) {

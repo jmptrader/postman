@@ -1,0 +1,30 @@
+!!! Strict
+%html
+  %head
+    %title= [@title || 'Jianxin', 'Intelligent Email delivery service.'].compact.join(' | ')
+    = csrf_meta_tags
+    = stylesheet_link_tag '/vendor/semantic/css/semantic.min.css'
+    = yield_content :assets
+
+  %body
+    .ui.grid
+      .sixteen.wide.column
+        .ui.teal.menu
+          %a.item#js:nav-index
+            %i.cloud.icon
+            Home
+          = link_to url(:client, :index), class: 'item popup', id: 'js:nav-sender', :'data-content' => 'Create Modify Delete sender.' do
+            = content_tag 'i', '', class: 'rocket icon'
+            = 'Senders Manage'
+          %a.item.popup#js:nav-exception(data-content="Decide the handle on a certain log.")
+            %i.bug.icon
+            Unknown Exception
+            %span.ui.red.label.small
+              214
+        .ui.horizontal.icon.divider(style="margin-bottom:0;" )
+          %i.red.heart.icon
+
+      = yield
+
+    = javascript_include_tag 'jquery.min','jquery-ujs','/vendor/semantic/javascript/semantic.min.js', 'application'
+    = yield_content :javascript

@@ -24,7 +24,7 @@ type Command struct {
 // create command with action and args
 func newCommand(client *Client, action string, args interface{}) *Command {
 	return &Command{
-		Id:     "-" + util.RandSeq(16),
+		Id:     "-" + util.RandSeq(4),
 		Action: action,
 		Args:   args,
 		client: client,

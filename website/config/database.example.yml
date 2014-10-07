@@ -1,0 +1,14 @@
+development: &defaults
+  adapter: mysql
+  database: example_development
+  username: user
+  password: Pa55w0rd
+  host: 127.0.0.1
+
+test:
+  <<: *defaults
+  database: example_test
+
+production:
+  <<: *defaults
+  database: example_production
