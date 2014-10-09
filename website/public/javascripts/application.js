@@ -14,4 +14,9 @@
         $nav = doc.getElementById('js:nav-index');
     }
     $($nav).addClass('active');
+
+    $.fn.form.settings.rules.regExp = function (value, re) {
+        var reg = new RegExp(re);
+        return reg.test(value);
+    };
 }(jQuery);

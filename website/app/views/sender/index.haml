@@ -1,0 +1,66 @@
+.row#sender-manager
+  .four.wide.column
+    .ui.secondary.vertical.pointing.menu
+      %a.item.active(href="#all" )
+        %i.meh.icon
+        All
+      %a.item(href="#online" )
+        %i.blue.ok.sign.icon
+        Online
+      %a.item(href="#offline" )
+        %i.red.attention.icon
+        Offline
+  .twelve.wide.column
+    - if @senders.size < 1
+      .ui.yellow.icon.message
+        %i.close.icon
+        %i.coffee.icon
+        .content
+          .header
+            You have not created any sender yet ＜(""O"")＞
+          %p
+            Create a sender and start to send email with love.
+
+    .ui.purple.right.labeled.tiny.icon.button#btn-createSender
+      %i.right.terminal.icon
+      Create Sender
+
+    - if @senders.size > 0
+      %table.ui.table.segment.sender-list
+        %thead
+          %tr
+            %th.four.wide.column IP
+            %th.five.wide.column Domain
+            %th.three.wide.column Status
+            %th Action
+        %tbody
+          %tr
+            %td 192.168.0.2
+            %td mx01.jianmail.com
+            %td online
+            %td
+              %a.dashboard(href="#" ) Dashboard
+              |
+              %a.remove(href="#" ) Remove
+
+.ui.small.modal.create-sender
+  .header
+    Create Sender
+  = form_for :sender, '/sender/create', class: 'ui form segment' ,id: 'form-createSender' do |f|
+    .field
+      .ui.left.labeled.icon.input
+        = f.text_field 'ip', placeholder: 'sender ip'
+        %i.cloud.icon
+    .field
+      .ui.left.labeled.icon.input
+        = f.text_field 'domain', placeholder: 'hostname'
+        %i.rocket.icon
+
+  .actions
+    .ui.button.negative
+      Cancel
+    .ui.button.positive#btn-submitSender
+      Create
+
+- content_for :javascript do
+  = javascript_include_tag 'sender/index'

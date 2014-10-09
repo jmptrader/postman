@@ -1,0 +1,31 @@
+@import url(//fonts.useso.com/css?family=Open+Sans:400,600,700,300);
+
+body {
+    font-family: 'Open Sans', sans-serif;
+}
+
+/* red heart divider in top */
+.top.divider {
+    margin-bottom: 0 !important;
+}
+
+/* actions for sender list in /sender/* */
+.sender-list a {
+    font-size: 0.9em;
+}
+
+.sender-list .dashboard {
+    color: #405E7E;
+}
+
+.sender-list .dashboard:hover {
+    color: #000000;
+}
+
+.sender-list .remove {
+    color: #D95C5C;
+}
+
+#form-createSender {
+    border: none !important;
+}

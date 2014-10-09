@@ -2,12 +2,12 @@
 
 module Website
   class App
-    module ClientHelper
+    module SenderHelper
       # def simple_helper_method
       # ...
       # end
     end
 
-    helpers ClientHelper
+    helpers SenderHelper
   end
 end
