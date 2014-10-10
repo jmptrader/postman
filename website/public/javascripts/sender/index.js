@@ -1,6 +1,7 @@
 (function ($) {
     // add form validation
     var $form = $('#form-createSender');
+    var $senderManager = $('#sender-manager');
 
     var submitForm = function () {
         $form.form('validate form');
@@ -67,7 +68,7 @@
             return submitForm();
         });
 
-    $('#sender-manager').on('click', '#btn-createSender', function () {
+    $senderManager.on('click', '#btn-createSender', function () {
         createSenderModal.modal('show');
     });
 
@@ -85,5 +86,27 @@
     };
 
     window.onhashchange();
+
+    $senderManager.on('click', '.remove', function (e) {
+        e.preventDefault();
+        var $this = $(this);
+        swal({
+            title: "Are you sure?",
+            text: "Sender will be disabled!",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Yes, delete it!",
+            closeOnConfirm: false
+        }, function () {
+            $.post($this.attr('href'), function (result) {
+                if (result.code === 200) {
+                    swal("Success!", "Sender destroy success.", "success");
+                    return  window.onhashchange();
+                }
+                swal("Oops...", result.error, "error");
+            }, 'json');
+        });
+    });
 
 })(jQuery);

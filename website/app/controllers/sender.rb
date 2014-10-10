@@ -30,4 +30,14 @@ Website::App.controllers :sender do
     end
     json errors: sender.errors.to_a.flatten
   end
+
+  post :destroy, map: '/sender/delete/:id' do
+    sender = Sender.get params['id']
+    return json error: 'Sender record does not exist!' unless sender
+    if sender.destroy
+      json code: 200
+    else
+      json error: "Can not remove sender #{sender.ip}"
+    end
+  end
 end

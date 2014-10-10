@@ -3,10 +3,10 @@
     %i.close.icon
     %i.coffee.icon
     .content
-  .header
-    You have not created any sender yet ＜(""O"")＞
-    %p
-      Create a sender and start to send email with love.
+      .header
+        You have not created any sender yet ＜(""O"")＞
+        %p
+          Create a sender and start to send email with love.
 
 .ui.purple.right.labeled.tiny.icon.button#btn-createSender
   %i.right.terminal.icon
@@ -29,4 +29,8 @@
           %td
             %a.dashboard(href="#" ) Dashboard
             |
-            %a.remove(href="#" ) Remove
+            = link_to 'Remove', url(:sender, :destroy, id: sender.id), class: 'remove'
+      - if @senders.size == 0
+        %tr
+          %td(colspan="4")
+            No record found
