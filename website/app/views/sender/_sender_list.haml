@@ -1,0 +1,32 @@
+- if @sender_size < 1
+  .ui.yellow.icon.message
+    %i.close.icon
+    %i.coffee.icon
+    .content
+  .header
+    You have not created any sender yet ＜(""O"")＞
+    %p
+      Create a sender and start to send email with love.
+
+.ui.purple.right.labeled.tiny.icon.button#btn-createSender
+  %i.right.terminal.icon
+  Create Sender
+
+- if @sender_size > 0
+  %table.ui.table.segment.sender-list
+    %thead
+      %tr
+        %th.four.wide.column IP
+        %th.five.wide.column HostName
+        %th.three.wide.column Status
+        %th Action
+    %tbody
+      -@senders.each do |sender|
+        %tr{class: ('error' if sender.status == 'offline')}
+          %td= sender.ip
+          %td= sender.domain
+          %td= sender.status
+          %td
+            %a.dashboard(href="#" ) Dashboard
+            |
+            %a.remove(href="#" ) Remove

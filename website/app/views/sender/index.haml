@@ -1,47 +1,16 @@
 .row#sender-manager
   .four.wide.column
-    .ui.secondary.vertical.pointing.menu
-      %a.item.active(href="#all" )
+    .ui.secondary.vertical.pointing.menu#nav-currentStatus
+      %a.item.status-all(href="#all" )
         %i.meh.icon
         All
-      %a.item(href="#online" )
+      %a.item.status-online(href="#online" )
         %i.blue.ok.sign.icon
         Online
-      %a.item(href="#offline" )
+      %a.item.status-offline(href="#offline" )
         %i.red.attention.icon
         Offline
-  .twelve.wide.column
-    - if @senders.size < 1
-      .ui.yellow.icon.message
-        %i.close.icon
-        %i.coffee.icon
-        .content
-          .header
-            You have not created any sender yet ＜(""O"")＞
-          %p
-            Create a sender and start to send email with love.
-
-    .ui.purple.right.labeled.tiny.icon.button#btn-createSender
-      %i.right.terminal.icon
-      Create Sender
-
-    - if @senders.size > 0
-      %table.ui.table.segment.sender-list
-        %thead
-          %tr
-            %th.four.wide.column IP
-            %th.five.wide.column Domain
-            %th.three.wide.column Status
-            %th Action
-        %tbody
-          %tr
-            %td 192.168.0.2
-            %td mx01.jianmail.com
-            %td online
-            %td
-              %a.dashboard(href="#" ) Dashboard
-              |
-              %a.remove(href="#" ) Remove
+  .twelve.wide.column#holder-senderList
 
 .ui.small.modal.create-sender
   .header

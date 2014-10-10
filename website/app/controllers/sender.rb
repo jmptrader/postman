@@ -6,8 +6,17 @@ Website::App.controllers :sender do
 
   get :list do
     @title = 'Senders'
-    @senders = Sender.all
     render 'index', layout: 'application'
+  end
+
+  get :list_part, map: '/sender/list.html' do
+    if  %w(offline online).include? params['status']
+      @senders = Sender.all status: params['status'], order: [:id.desc]
+    else
+      @senders = Sender.all order: [:id.desc]
+    end
+    @sender_size = Sender.count
+    render '_sender_list', layout: false
   end
 
   post :create do
@@ -17,7 +26,7 @@ Website::App.controllers :sender do
     sender_params.each_value { |v| v.strip! }
     sender = Sender.create(sender_params)
     if sender.errors.size == 0
-      return json code: 200
+      return json code: 200, sender_id: sender.id
     end
     json errors: sender.errors.to_a.flatten
   end

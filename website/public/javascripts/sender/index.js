@@ -17,7 +17,9 @@
                 return;
             }
             swal("Success!", "New sender create success.", "success");
-            // todo update list
+            setTimeout(function () {
+                window.location.href = '/sender/' + data['sender_id'];
+            }, 1000);
         }).error(function () {
             swal("Oops...", "Network error, please try later!", "error");
         });
@@ -68,5 +70,20 @@
     $('#sender-manager').on('click', '#btn-createSender', function () {
         createSenderModal.modal('show');
     });
+
+    window.onhashchange = function () {
+        var currentStatus = window.location.hash.substr(1);
+        if (['online', 'offline'].indexOf(currentStatus) === -1) {
+            currentStatus = 'all';
+        }
+        var $statusNav = $('#nav-currentStatus');
+        $statusNav.find('.active').removeClass('active');
+        $statusNav.find('.status-' + currentStatus).addClass('active');
+        $.get('/sender/list.html?status=' + currentStatus, function (html) {
+            $('#holder-senderList').html(html);
+        });
+    };
+
+    window.onhashchange();
 
 })(jQuery);
