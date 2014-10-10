@@ -2,9 +2,6 @@ var path = require('path');
 var sys = require('sys');
 var crypto = require('crypto');
 
-const commandPrefix = "DATA";
-const commandSuffix = "END";
-
 global.Action = {
     _actionMap: {},
     register: function (action, callback) {
@@ -28,36 +25,35 @@ require("fs").readdirSync("./actions").forEach(function (file) {
     require("../actions/" + file);
 });
 
-// check client ip
+// check sender ip
 var init = function () {
     var c = this;
-    Client.find({
+    Sender.find({
         where: {
             ip: c.remoteAddress
         }
-    }).success(function (client) {
-        if (!client) {
-            c.command('exit', {
-                "msg": 'client not found'
-            })
-            return;
+    }).success(function (sender) {
+        if (!sender) {
+            return c.command('exit', {
+                "msg": 'sender not found'
+            });
         }
         // send auth require command
         crypto.randomBytes(16, function (ex, buf) {
             c.auth_key = buf.toString('hex').substr(0, 16);
-            c.client = client;
+            c.sender = sender;
             c.auth = false;
             c.command('helo', {
                 auth_key: c.auth_key
             });
         });
     });
-}
+};
 
 module.exports = function () {
     var c = cleartextStream;
     init.call(c);
-    // send command to client
+    // send command to sender
     c.command = function (action, args) {
         crypto.randomBytes(4, function (ex, buf) {
             var commandStr = ["+" + buf.toString('hex').substr(0, 4), action, JSON.stringify(args)].join('|');
@@ -68,10 +64,15 @@ module.exports = function () {
     c.addListener('data', function (data) {
         Action.handle(data.trim());
     });
-    // trigger when client close
+    // trigger when sender close
     c.addListener('close', function () {
-        sys.puts('TLS connection ' + c.client.ip + 'closed');
-        // TODO: warning should be raised to tell administrator: client closed.
+        if (c.sender) {
+            c.sender.status = 'offline';
+            c.sender.save(['status']).success(function () {
+                sys.puts('TLS connection ' + c.sender.ip + ' closed');
+            });
+        }
+        // TODO: warning should be raised to tell administrator: sender closed.
         // all command in queue will resend after reconnect.
     });
 };

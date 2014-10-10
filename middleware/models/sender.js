@@ -1,4 +1,4 @@
-global.Client = model.define('Client', {
+global.Sender = model.define('Sender', {
     ip: {
         type: Model.STRING,
         validate: {
@@ -7,4 +7,8 @@ global.Client = model.define('Client', {
     },
     secret: Model.STRING,
     status: Model.STRING
+}, {
+    tableName: 'senders',
+    updatedAt: 'updated_at',
+    createdAt: 'created_at'
 });
