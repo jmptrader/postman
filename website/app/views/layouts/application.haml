@@ -4,7 +4,7 @@
     %title= [@title || 'Jianxin', 'Intelligent Email delivery service.'].compact.join(' | ')
     = csrf_meta_tags
     = stylesheet_link_tag 'application', '/vendor/semantic/css/semantic.min.css', '/vendor/sweetalert/sweet-alert.css'
-    = yield_content :assets
+    = yield_content :stylesheet
 
   %body
     .ui.grid
@@ -13,16 +13,14 @@
           .item#js:nav-index
             %i.cloud.icon
             简信
-          = link_to url(:sender, :index), class: 'item popup', id: 'js:nav-sender', :'data-content' => 'Create Modify Delete sender.' do
+          = link_to url(:sender, :index), class: 'item pp', id: 'js:nav-sender', :'data-content' => 'Create Modify Delete sender.' do
             = content_tag 'i', '', class: 'rocket icon'
             = 'Senders Manage'
-          %a.item.popup#js:nav-exception(data-content="Decide the handle on a certain log.")
+          %a.item.pp#js:nav-exception(data-content="Decide the handle on a certain log.")
             %i.bug.icon
             Unknown Exception
             %span.ui.red.label.small
               214
-        .ui.horizontal.icon.top.divider
-          %i.red.heart.icon
 
       = yield
 

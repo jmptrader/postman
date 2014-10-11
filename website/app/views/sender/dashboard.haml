@@ -1,6 +1,43 @@
 .row
-  .sixteen.wide.column
-    .ui.small.breadcrumb
-      = link_to 'Senders', url(:sender, :list), class: 'section'
-      .divider /
-      .active.section= @sender.ip
+  .four.wide.column
+    .ui.left.aligned.inverted.segment{class: ( @sender.status == 'online' ? 'blue' : 'red')}
+      .ui.small.breadcrumb
+        = link_to 'Senders', url(:sender, :list), class: 'section'
+        .divider /
+        .active.section
+          = "#{@sender.ip} [#{@sender.status}]"
+    .ui.divided.list
+      .item
+        %i.cloud.marker.icon
+        .content
+          .header
+            Hostname:
+            %a [edit]
+          .description= @sender.domain
+      .item
+        %i.time.marker.icon
+        .content
+          .header Created at:
+          .description= @sender.created_at.strftime '%Y-%m-%d %H:%M:%S'
+      .item(style="padding-top: 2em" )
+        = link_to url(:sender, :config_download, id: @sender.id) ,
+        'data-content'=> 'Download config file for sender.', class: 'ui button pp' do
+          = content_tag :i, '', class: 'download icon'
+          = 'Download Config'
+
+  .twelve.wide.column
+    .ui.secondary.pointing.menu
+      %a.item.active
+        %i.book.icon
+        Getting Started
+      %a.item
+        %i.setting.icon
+        Setting
+      %a.item
+        %i.list.layout.icon
+        Logs
+
+- content_for :stylesheet do
+  = stylesheet_link_tag '/vendor/highlight/github.css'
+- content_for :javascript do
+  = javascript_include_tag '/vendor/highlight/highlight.pack.js'

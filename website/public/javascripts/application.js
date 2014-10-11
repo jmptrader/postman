@@ -1,5 +1,5 @@
 !function ($) {
-    $('a.popup').popup();
+    $('.pp').popup();
 
     $('.message .close').on('click', function () {
         $(this).closest('.message').fadeOut();

@@ -5,8 +5,8 @@ body {
 }
 
 /* red heart divider in top */
-.top.divider {
-    margin-bottom: 0 !important;
+.divider {
+    margin: 0.2rem 0 0 !important;
 }
 
 /* actions for sender list in /sender/* */
@@ -28,4 +28,12 @@ body {
 
 #form-createSender {
     border: none !important;
+}
+
+.red a {
+    color: #FDCFCF;
+}
+
+.red a:hover {
+    color: #FFCB08;
 }

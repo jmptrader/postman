@@ -34,6 +34,5 @@ Padrino.configure_apps do
     set key.to_sym, value
   end
 end
-
 # Mounts the core application for this project
 Padrino.mount('Website::App', :app_file => Padrino.root('app/app.rb')).to('/')
