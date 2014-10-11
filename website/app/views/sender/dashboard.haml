@@ -1,0 +1,6 @@
+.row
+  .sixteen.wide.column
+    .ui.small.breadcrumb
+      = link_to 'Senders', url(:sender, :list), class: 'section'
+      .divider /
+      .active.section= @sender.ip

@@ -19,12 +19,13 @@ class Sender
   property :status, String, default: 'offline'
   property :secret, String, default: lambda { |r, _| r.random_secret 32 }
   property :storage_key, String, default: lambda { |r, _| r.random_secret 32 }
+  property :api_key, String, default: lambda { |r, _| r.random_secret 32 }
   property :updated_at, DateTime
   property :created_at, DateTime
 
   public
   def random_secret(len)
-    o = [('a'..'z'), ('A'..'Z')].map { |i| i.to_a }.flatten
+    o = [('a'..'z'), ('A'..'Z'), %w(+ / ! . ?)].map { |i| i.to_a }.flatten
     (0...len).map { o[rand(o.length)] }.join
   end
 end

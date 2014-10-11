@@ -20,7 +20,7 @@ type Config struct {
 	AuthSecret  string    `json:"authSecret"`
 	StoreSecret string    `json:"storeSecret"`
 	RemoteAddr  string    `json:"remoteAddr"`
-	CreateAt    time.Time `json:"createAt"`
+	CreatedAt   time.Time `json:"createdAt"`
 }
 
 var config Config

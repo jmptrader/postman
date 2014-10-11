@@ -1,0 +1,7 @@
+development: &defaults
+  website_addr: local.jianxin.io:3000
+  middleware_addr: 127.0.0.1:9002
+
+production:
+  <<: *defaults
+  web_domain: jianxin.io

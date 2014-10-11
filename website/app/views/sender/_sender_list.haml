@@ -27,7 +27,7 @@
           %td= sender.domain
           %td= sender.status
           %td
-            %a.dashboard(href="#" ) Dashboard
+            = link_to 'Dashboard', url(:sender, :dashboard, id: sender.id), class: 'dashboard'
             |
             = link_to 'Remove', url(:sender, :destroy, id: sender.id), class: 'remove'
       - if @senders.size == 0

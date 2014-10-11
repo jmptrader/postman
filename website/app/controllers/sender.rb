@@ -40,4 +40,23 @@ Website::App.controllers :sender do
       json error: "Can not remove sender #{sender.ip}"
     end
   end
+
+  get :dashboard, map: '/sender/:id' do
+    @sender = Sender.get params['id']
+    halt 404, 'no sender found' unless @sender
+    @title = @sender.ip
+    render 'dashboard', layout: 'application'
+  end
+
+  get :config_download, map: '/sender/:id/config/download' do
+    @sender = Sender.get params['id']
+    halt 404, 'no sender found' unless @sender
+    attachment 'config.json'
+    {
+        authSecret: @sender.secret,
+        storeSecret: @sender.storage_key,
+        remoteAddr: settings.middleware_addr,
+        createAt: @sender.created_at.iso8601(3)
+    }.to_json
+  end
 end
