@@ -13,7 +13,7 @@ type Postman struct {
 
 func main() {
 	st := store.New(dbDir, config.StoreSecret)
-	var postman = Postman{
+	postman := Postman{
 		Store:  st,
 		Tunnel: tunnel.New(tunnelConfig(st)),
 	}

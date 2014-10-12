@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"crypto/tls"
 	"encoding/hex"
+	"errors"
 	"io"
 	"log"
 	"os"
@@ -14,7 +15,10 @@ import (
 	"postman/store"
 )
 
-const COMMAND_KEY_PREFIX = "cmd:"
+const (
+	COMMAND_KEY_PREFIX = "cmd:"
+	LINEFEED           = '\n'
+)
 
 type Action struct {
 	Instance func() interface{}
@@ -29,18 +33,34 @@ type Config struct {
 }
 
 type Client struct {
-	config        Config
-	RequestChan   chan interface{}
-	authBlockChan chan bool
-	actionMap     map[string]*Action
-	online        bool
-	buf           *bufio.ReadWriter
-	conn          *tls.Conn
-	name          *tls.Conn
+	config          Config
+	RequestChan     chan interface{}
+	authBlockChan   chan bool
+	actionMap       map[string]*Action
+	requestBlockMap map[string]chan string
+	online          bool
+	buf             *bufio.ReadWriter
+	conn            *tls.Conn
+	name            *tls.Conn
+}
+
+type response struct {
+	Id   string `json:"id"`
+	Body string `json:"body"`
 }
 
 func (c *Client) Serve() {
 	c.online = true
+	// add response support
+	c.Register("response", func() interface{} {
+		return &response{}
+	}, func(c *Client, args interface{}) {
+		msg := args.(*response)
+		reqChan, ok := c.requestBlockMap[msg.Id]
+		if ok {
+			reqChan <- msg.Body
+		}
+	})
 	c.serve()
 	if c.online {
 		<-time.After(time.Second * 10)
@@ -67,9 +87,27 @@ func (c *Client) SetAuthenticated() {
 }
 
 // send command to remote server
-func (c *Client) Request(action string, args interface{}) {
+func (c *Client) Request(action string, args interface{}) string {
 	command := newCommand(c, action, args)
 	c.RequestChan <- command
+	return command.Id
+}
+
+// send command and wait for response with timeout
+func (c *Client) RequestBlock(action string, args interface{}) (res string, err error) {
+	cmdId := c.Request(action, args)
+	c.requestBlockMap[cmdId] = make(chan string)
+	defer func() {
+		close(c.requestBlockMap[cmdId])
+		delete(c.requestBlockMap, cmdId)
+	}()
+	select {
+	case res = <-c.requestBlockMap[cmdId]:
+		return
+	case <-time.After(time.Second * 10):
+		err = errors.New("request timeout")
+	}
+	return
 }
 
 // register action for client
@@ -99,7 +137,7 @@ func (c *Client) handle(reply string) {
 // read buffer from server
 func (c *Client) handleConn() {
 	for {
-		reply, err := c.buf.ReadString('\n')
+		reply, err := c.buf.ReadString(LINEFEED)
 		if err == io.EOF {
 			log.Printf("\033[1;33;40mremote server: %s disconnect.\033[m\r\nReconnect will start after 10 seconds.", c.config.Remote)
 			return
@@ -127,7 +165,7 @@ func (c *Client) sendCmd(cmd string) error {
 		log.Print("SEND: ", cmd)
 	}
 	c.buf.Write([]byte(cmd))
-	c.buf.WriteByte('\n')
+	c.buf.WriteByte(LINEFEED)
 	return c.buf.Flush()
 }
 
@@ -136,6 +174,7 @@ func (c *Client) handleReq() {
 	// block until authenticated
 	<-c.authBlockChan
 	close(c.authBlockChan)
+
 	for command := range c.RequestChan {
 		var cmd, cmdId string
 		// receive command via chan

@@ -2,7 +2,7 @@ var path = require('path');
 var sys = require('sys');
 var crypto = require('crypto');
 
-var bufferSpliter = '\n';
+var LINEFEED = '\n';
 
 global.Action = {
     _actionMap: {},
@@ -17,7 +17,7 @@ global.Action = {
             return
         }
         var args = JSON.parse(command.substr(action.length + id.length + 2));
-        this._actionMap[action].call(cleartextStream, args);
+        this._actionMap[action].call(cleartextStream, args, id);
     }
 };
 
@@ -59,14 +59,22 @@ module.exports = function () {
     c.command = function (action, args) {
         crypto.randomBytes(4, function (ex, buf) {
             var commandStr = ["+" + buf.toString('hex').substr(0, 4), action, JSON.stringify(args)].join('|');
-            c.write(commandStr + bufferSpliter);
+            c.write(commandStr + LINEFEED);
         });
     };
+
+    c.response = function (id, res) {
+        c.command('response', {
+            id: id,
+            body: res
+        })
+    };
+
     c.unhandledBuffer = '';
     // receive data and parse it
     c.addListener('data', function (data) {
         data = c.unhandledBuffer + data;
-        var buf = data.split(bufferSpliter);
+        var buf = data.split(LINEFEED);
         c.unhandledBuffer = buf.pop();
         buf.forEach(function (cmd) {
             Action.handle(cmd.trim());
