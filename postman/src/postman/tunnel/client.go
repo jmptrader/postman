@@ -152,7 +152,11 @@ func (c *Client) handleReq() {
 		err := c.sendCmd(cmd)
 		if err != nil {
 			log.Printf("client: send %s: %s", command, err)
-			// TODO: resent after 1 min
+			// resent after 10 second
+			go func() {
+				<-time.After(time.Second * 10)
+				c.RequestChan <- cmd
+			}()
 			return
 		}
 		c.config.Store.Destroy(COMMAND_KEY_PREFIX + cmdId)
