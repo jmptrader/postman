@@ -12,6 +12,9 @@ Action.register('auth', function (args) {
         console.log('sender auth fail');
         return
     }
+    this.command('authenticated', {
+        "senderId": c.sender.id
+    });
     c.sender.status = 'online';
     c.sender.save(['status']).success(function () {
         console.log('sender: ' + c.sender.ip + ' auth success.');

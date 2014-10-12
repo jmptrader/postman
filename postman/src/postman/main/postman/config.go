@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"postman/store"
 	"postman/tunnel"
 )
 
@@ -66,7 +67,7 @@ func loadConfig() (Config, error) {
 }
 
 // get tunnel config
-func tunnelConfig() tunnel.Config {
+func tunnelConfig(st store.Store) tunnel.Config {
 	conf := &tls.Config{
 		InsecureSkipVerify: true,
 	}
@@ -74,5 +75,6 @@ func tunnelConfig() tunnel.Config {
 		Conf:   conf,
 		Remote: config.RemoteAddr,
 		Secret: config.AuthSecret,
+		Store:  st,
 	}
 }

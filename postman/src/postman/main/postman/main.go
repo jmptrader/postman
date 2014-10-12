@@ -12,17 +12,24 @@ type Postman struct {
 }
 
 func main() {
+	st := store.New(dbDir, config.StoreSecret)
 	var postman = Postman{
-		Store:  store.New(dbDir, config.StoreSecret),
-		Tunnel: tunnel.New(tunnelConfig()),
+		Store:  st,
+		Tunnel: tunnel.New(tunnelConfig(st)),
 	}
 	// TODO register all actions
 	postman.Tunnel.Register("exit", func() interface{} {
 		return &actions.ExitMsg{}
 	}, actions.Exit)
+
 	postman.Tunnel.Register("helo", func() interface{} {
 		return &actions.HeloMsg{}
 	}, actions.Helo)
-	// postman.Tunnel.Register("action", func(){return &X{}, func(c Client, args interface{}){}})
+
+	postman.Tunnel.Register("authenticated", func() interface{} {
+		return &actions.AuthenticatedMsg{}
+	}, actions.Authenticated)
+
+	// connect to middleware
 	postman.Tunnel.Serve()
 }

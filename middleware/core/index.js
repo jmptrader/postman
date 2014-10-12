@@ -2,6 +2,8 @@ var path = require('path');
 var sys = require('sys');
 var crypto = require('crypto');
 
+var bufferSpliter = '\n';
+
 global.Action = {
     _actionMap: {},
     register: function (action, callback) {
@@ -57,12 +59,18 @@ module.exports = function () {
     c.command = function (action, args) {
         crypto.randomBytes(4, function (ex, buf) {
             var commandStr = ["+" + buf.toString('hex').substr(0, 4), action, JSON.stringify(args)].join('|');
-            c.write(commandStr + '\n');
+            c.write(commandStr + bufferSpliter);
         });
     };
+    c.unhandledBuffer = '';
     // receive data and parse it
     c.addListener('data', function (data) {
-        Action.handle(data.trim());
+        data = c.unhandledBuffer + data;
+        var buf = data.split(bufferSpliter);
+        c.unhandledBuffer = buf.pop();
+        buf.forEach(function (cmd) {
+            Action.handle(cmd.trim());
+        });
     });
     // trigger when sender close
     c.addListener('close', function () {

@@ -10,7 +10,11 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"postman/store"
 )
+
+const COMMAND_KEY_PREFIX = "cmd:"
 
 type Action struct {
 	Instance func() interface{}
@@ -19,18 +23,20 @@ type Action struct {
 
 type Config struct {
 	Conf   *tls.Config
+	Store  store.Store
 	Remote string
 	Secret string
 }
 
 type Client struct {
-	config      Config
-	RequestChan chan string
-	actionMap   map[string]*Action
-	online      bool
-	buf         *bufio.ReadWriter
-	conn        *tls.Conn
-	name        *tls.Conn
+	config        Config
+	RequestChan   chan interface{}
+	authBlockChan chan bool
+	actionMap     map[string]*Action
+	online        bool
+	buf           *bufio.ReadWriter
+	conn          *tls.Conn
+	name          *tls.Conn
 }
 
 func (c *Client) Serve() {
@@ -42,16 +48,28 @@ func (c *Client) Serve() {
 	}
 }
 
-func (c *Client) Auth(str string) string {
+// send auth command to server
+// exit if error meet
+func (c *Client) Auth(str string) {
 	hasher := md5.New()
 	hasher.Write([]byte(c.config.Secret + str))
-	return hex.EncodeToString(hasher.Sum(nil))
+	cmd := newCommand(c, "auth", map[string]string{
+		"result": hex.EncodeToString(hasher.Sum(nil)),
+	})
+	err := c.sendCmd(cmd.String())
+	if err != nil {
+		log.Fatalf("client: sende auth command %s", err.Error())
+	}
+}
+
+func (c *Client) SetAuthenticated() {
+	c.authBlockChan <- true
 }
 
 // send command to remote server
 func (c *Client) Request(action string, args interface{}) {
 	command := newCommand(c, action, args)
-	c.RequestChan <- command.String()
+	c.RequestChan <- command
 }
 
 // register action for client
@@ -70,6 +88,9 @@ func (c *Client) Register(action string, instance func() interface{}, handler fu
 func (c *Client) handle(reply string) {
 	command, err := receiveCommand(c, reply)
 	if err != nil {
+		if os.Getenv("POSTMAN_DEBUG_MODE") == "true" {
+			log.Print(err)
+		}
 		return
 	}
 	command.Handler(c, command.Args)
@@ -100,23 +121,48 @@ func (c *Client) handleConn() {
 	}
 }
 
+// send command string to server
+func (c *Client) sendCmd(cmd string) error {
+	if os.Getenv("POSTMAN_DEBUG_MODE") == "true" {
+		log.Print("SEND: ", cmd)
+	}
+	c.buf.Write([]byte(cmd))
+	c.buf.WriteByte('\n')
+	return c.buf.Flush()
+}
+
 // send command to server
 func (c *Client) handleReq() {
-	var command string
-	for command = range c.RequestChan {
+	// block until authenticated
+	<-c.authBlockChan
+	close(c.authBlockChan)
+	for command := range c.RequestChan {
+		var cmd, cmdId string
 		// receive command via chan
+		cmd, ok := command.(string)
+		if ok {
+			bytes := []byte(cmd)
+			cmdId = string(bytes[0:5])
+		} else {
+			cmdSt, _ := command.(*Command)
+			cmd, cmdId = cmdSt.String(), cmdSt.Id
+			c.config.Store.Set(COMMAND_KEY_PREFIX+cmdId, cmd)
+		}
 		// then send it
-		c.buf.Write([]byte(command))
-		err := c.buf.Flush()
+		err := c.sendCmd(cmd)
 		if err != nil {
 			log.Printf("client: send %s: %s", command, err)
+			// TODO: resent after 1 min
+			return
 		}
+		c.config.Store.Destroy(COMMAND_KEY_PREFIX + cmdId)
 	}
 }
 
 // close conn from client
 func (c *Client) Close() {
 	c.online = false
+	close(c.RequestChan)
 	c.conn.Close()
 }
 
@@ -139,5 +185,14 @@ func (c *Client) serve() {
 	bw := bufio.NewWriter(conn)
 	c.buf = bufio.NewReadWriter(br, bw)
 	go c.handleReq()
+	go func() {
+		// resend all fail request
+		for _, key := range c.config.Store.Keys(COMMAND_KEY_PREFIX) {
+			cmd, ok := c.config.Store.Get(key)
+			if ok {
+				c.RequestChan <- cmd
+			}
+		}
+	}()
 	c.handleConn()
 }

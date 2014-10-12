@@ -68,13 +68,11 @@ func (st *store) Get(key string) (res string, ok bool) {
 		return
 	}
 	n, err := loadKV(st, key)
-
 	if err != nil || n.Type != "string" {
 		ok = false
 		return
 	}
-	res = n.Value
-	return
+	return n.Value, true
 }
 
 // destroy a certain key

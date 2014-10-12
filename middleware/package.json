@@ -2,6 +2,8 @@
     "name": "postman-middleware",
     "version": "0.0.1",
     "dependencies": {
-        "sequelize": "*"
+        "sequelize": "*",
+        "mysql": "*",
+        "redis": "*"
     }
 }
