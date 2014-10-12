@@ -2,7 +2,7 @@ var path = require('path');
 var sys = require('sys');
 var crypto = require('crypto');
 
-var LINEFEED = '\n';
+var LINEFEED = '\f';
 
 global.Action = {
     _actionMap: {},

@@ -17,7 +17,7 @@ import (
 
 const (
 	COMMAND_KEY_PREFIX = "cmd:"
-	LINEFEED           = '\n'
+	LINEFEED           = '\f'
 )
 
 type Action struct {
@@ -151,6 +151,7 @@ func (c *Client) handleConn() {
 		if strings.HasPrefix(reply, "-") {
 			continue
 		}
+		reply = strings.Trim(reply, string(LINEFEED))
 		// parse command and send to handle
 		if os.Getenv("POSTMAN_DEBUG_MODE") == "true" {
 			log.Print("RECEIVE: ", reply)
