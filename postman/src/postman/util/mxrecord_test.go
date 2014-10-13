@@ -5,27 +5,6 @@ import (
 	"testing"
 )
 
-func TestCacheFind(t *testing.T) {
-	data := make(map[string]mxRecordData)
-	cache := MXCache{data: data}
-	l := []string{"name"}
-	cache.update("qq.com", l)
-	records, ok := cache.find("qq.com")
-	if !(len(records) == 1 && ok) {
-		t.Error("Can not find elem")
-	}
-}
-
-func TestCacheExpire(t *testing.T) {
-	data := make(map[string]mxRecordData)
-	data["qq.com"] = mxRecordData{records: []string{"mx1.qq.com"}, expireIn: 1231231}
-	cache := MXCache{data: data}
-	records, ok := cache.find("qq.com")
-	if len(records) != 1 || ok {
-		t.Error("Can not find elem")
-	}
-}
-
 func TestMXRecord(t *testing.T) {
 	records, err := mxRecords("qq.com")
 	if err != nil {

@@ -15,6 +15,8 @@ import (
 	"postman/store"
 )
 
+var DEBUG = os.Getenv("POSTMAN_DEBUG_MODE") == "true"
+
 const (
 	COMMAND_KEY_PREFIX = "cmd:"
 	LINEFEED           = '\f'
@@ -126,7 +128,7 @@ func (c *Client) Register(action string, instance func() interface{}, handler fu
 func (c *Client) handle(reply string) {
 	command, err := receiveCommand(c, reply)
 	if err != nil {
-		if os.Getenv("POSTMAN_DEBUG_MODE") == "true" {
+		if DEBUG {
 			log.Print(err)
 		}
 		return
@@ -153,7 +155,7 @@ func (c *Client) handleConn() {
 		}
 		reply = strings.Trim(reply, string(LINEFEED))
 		// parse command and send to handle
-		if os.Getenv("POSTMAN_DEBUG_MODE") == "true" {
+		if DEBUG {
 			log.Print("RECEIVE: ", reply)
 		}
 		go c.handle(reply)
@@ -162,7 +164,7 @@ func (c *Client) handleConn() {
 
 // send command string to server
 func (c *Client) sendCmd(cmd string) error {
-	if os.Getenv("POSTMAN_DEBUG_MODE") == "true" {
+	if DEBUG {
 		log.Print("SEND: ", cmd)
 	}
 	c.buf.Write([]byte(cmd))

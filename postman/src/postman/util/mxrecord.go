@@ -6,14 +6,11 @@ import (
 	"math/rand"
 	"os/exec"
 	"strings"
-	"sync"
-	"time"
+
+	"postman/cache"
 )
 
-// mx-record cache
-var cache = MXCache{
-	data: make(map[string]mxRecordData),
-}
+var mxCache = cache.NewCache(7200)
 
 // use dig command to get dns record
 func digCmd(addr string, t string) (string, error) {
@@ -42,8 +39,9 @@ func cnameRecord(addr string) (record string, err error) {
 // dig example.com MX +short
 // 10 mx.example.com.
 func mxRecords(addr string) (records []string, err error) {
-	records, ok := cache.find(addr)
+	value, ok := mxCache.Get(addr)
 	if ok {
+		records = value.([]string)
 		return
 	}
 	out, err := digCmd(addr, "MX")
@@ -64,7 +62,7 @@ func mxRecords(addr string) (records []string, err error) {
 			return mxRecords(cname)
 		}
 	}
-	cache.update(addr, records)
+	mxCache.Update(addr, records)
 	return
 }
 
@@ -80,39 +78,4 @@ func MxRecord(addr string) (record string, err error) {
 	}
 	record = records[rand.Intn(len(records))]
 	return
-}
-
-type MXCache struct {
-	lock sync.RWMutex
-	data map[string]mxRecordData
-}
-
-type mxRecordData struct {
-	records  []string
-	expireIn int64
-}
-
-// find list for domain in cache.
-func (c *MXCache) find(key string) (records []string, ok bool) {
-	c.lock.RLock()
-	defer c.lock.RUnlock()
-	d, ok := c.data[key]
-	if !ok {
-		return
-	}
-	records = d.records
-	now := time.Now().Unix()
-	if now > d.expireIn {
-		ok = false
-		return
-	}
-	return
-}
-
-// update cache, expire in 2 hours
-func (c *MXCache) update(key string, records []string) {
-	c.lock.RLock()
-	defer c.lock.RUnlock()
-	expire := time.Now().Unix() + 7200
-	c.data[key] = mxRecordData{records, expire}
 }
