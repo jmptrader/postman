@@ -6,7 +6,7 @@ Website::App.controllers :sender do
 
   get :list do
     @title = 'Senders'
-    render 'index', layout: 'application'
+    render 'list', layout: 'application'
   end
 
   get :list_part, map: '/sender/list.html' do
@@ -26,6 +26,7 @@ Website::App.controllers :sender do
     sender_params.each_value { |v| v.strip! }
     sender = Sender.create(sender_params)
     if sender.errors.size == 0
+      sender.init
       return json code: 200, sender_id: sender.id
     end
     json errors: sender.errors.to_a.flatten
@@ -44,8 +45,28 @@ Website::App.controllers :sender do
   get :dashboard, map: '/sender/:id' do
     @sender = Sender.get params['id']
     halt 404, 'no sender found' unless @sender
-    @title = @sender.ip
-    render 'dashboard', layout: 'application'
+    @title = 'dashboard'
+    haml :'layouts/dashboard', layout: :application do
+      haml :'sender/getting_started', layout: false
+    end
+  end
+
+  get :setting, map: '/sender/:id/setting' do
+    @sender = Sender.get params['id']
+    halt 404, 'no sender found' unless @sender
+    @title = 'setting'
+    haml :'layouts/dashboard', layout: :application do
+      haml :'sender/setting', layout: false
+    end
+  end
+
+  get :logs, map: '/sender/:id/logs' do
+    @sender = Sender.get params['id']
+    halt 404, 'no sender found' unless @sender
+    @title = 'logs'
+    haml :'layouts/dashboard', layout: :application do
+      haml :'sender/logs', layout: false
+    end
   end
 
   get :config_download, map: '/sender/:id/config/download' do

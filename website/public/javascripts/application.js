@@ -19,4 +19,16 @@
         var reg = new RegExp(re);
         return reg.test(value);
     };
+
+    var $navDashboard = $('#nav-senderDashboard');
+    if ($navDashboard[0]) {
+        $navDashboard.find('.active').removeClass('active');
+        $navDashboard.find('.' + ( window.location.pathname.split('/')[3] || 'index'))
+            .addClass('active');
+    }
+    $navDashboard.on('click', '.item', function () {
+        $navDashboard.find('.active').removeClass('active');
+        $(this).addClass('active');
+    });
+
 }(jQuery);

@@ -12,7 +12,6 @@
         .content
           .header
             Hostname:
-            %a [edit]
           .description= @sender.domain
       .item
         %i.time.marker.icon
@@ -26,16 +25,18 @@
           = 'Download Config'
 
   .twelve.wide.column
-    .ui.secondary.pointing.menu
-      %a.item.active
-        %i.book.icon
-        Getting Started
-      %a.item
-        %i.setting.icon
-        Setting
-      %a.item
-        %i.list.layout.icon
-        Logs
+    .ui.secondary.pointing.menu#nav-senderDashboard
+      = link_to url(:sender, :dashboard, id: @sender.id), class: 'item index' do
+        = content_tag :i, '', class: 'download icon'
+        = 'Getting Started'
+      = link_to url(:sender, :setting, id: @sender.id), class: 'item setting' do
+        = content_tag :i, '', class: 'setting icon'
+        = 'Setting'
+      = link_to url(:sender, :logs, id: @sender.id), class: 'item logs' do
+        = content_tag :i, '', class: 'list layout icon'
+        = 'Logs'
+
+    = yield
 
 - content_for :stylesheet do
   = stylesheet_link_tag '/vendor/highlight/github.css'

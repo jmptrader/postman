@@ -32,7 +32,10 @@ var init = function () {
     var c = this;
     Sender.find({
         where: {
-            ip: c.remoteAddress
+            ip: c.remoteAddress,
+            status: {
+                ne: 'pending'
+            }
         }
     }).success(function (sender) {
         if (!sender) {

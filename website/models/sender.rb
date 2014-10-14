@@ -16,16 +16,45 @@ class Sender
                unique: 'domain record has been used before',
                format: 'domain record is not validated'
            }
-  property :status, String, default: 'offline'
-  property :secret, String, default: lambda { |r, _| r.random_secret 32 }
-  property :storage_key, String, default: lambda { |r, _| r.random_secret 32 }
-  property :api_key, String, default: lambda { |r, _| r.random_secret 32 }
+  property :status, String, default: 'pending'
+
+  # secret keys
+  property :secret, String
+  property :storage_key, String
+  property :api_key, String
+  property :private_key, Text
+  property :public_key, Text
+  # settings
+  property :web_hook, String
+  property :immediate, Boolean, default: false
+
   property :updated_at, DateTime
   property :created_at, DateTime
 
-  public
+  private
   def random_secret(len)
     o = [('a'..'z'), ('A'..'Z'), %w(+ / ! . ?)].map { |i| i.to_a }.flatten
     (0...len).map { o[rand(o.length)] }.join
   end
+
+  def generate_keys
+    key = OpenSSL::PKey::RSA.new 1024
+    self.private_key = key.to_pem
+    self.public_key = key.public_key.to_pem
+  end
+
+  public
+  def init
+    self.secret = random_secret(32)
+    self.storage_key = random_secret(32)
+    self.api_key = random_secret(32)
+    generate_keys
+    save!
+  end
+
+  def dkim_record
+    public_key = @public_key.lines.map { |line| line.chomp }
+    "v=DKIM1; k=rsa; p=#{public_key[1...-1].join}"
+  end
+
 end
