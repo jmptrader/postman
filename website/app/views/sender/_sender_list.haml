@@ -22,7 +22,7 @@
         %th Action
     %tbody
       -@senders.each do |sender|
-        %tr{class: ('error' if sender.status == 'offline')}
+        %tr{class: ('error' if sender.status != 'online')}
           %td= sender.ip
           %td= sender.domain
           %td= sender.status

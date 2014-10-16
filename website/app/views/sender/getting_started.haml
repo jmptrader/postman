@@ -1,11 +1,2 @@
-.grey.ui.icon.message
-  .content
-    .ui.fluid.small.form
-      .inline.fluid.field
-        .ui.pointing.right.label
-          Domain:
-        .ui.fluid.input= input_tag :text, value: @sender.domain, disabled: 'disabled'
-      .inline.fluid.field
-        .ui.pointing.right.label
-          Secret:
-        .ui.fluid.input= input_tag :text, value: @sender.secret, disabled: 'disabled'
+- if @sender.status == 'unverified'
+  = partial 'sender/check_dns'

@@ -34,7 +34,7 @@ var init = function () {
         where: {
             ip: c.remoteAddress,
             status: {
-                ne: 'pending'
+                ne: 'unverified'
             }
         }
     }).success(function (sender) {

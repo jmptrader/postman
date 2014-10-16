@@ -1,5 +1,12 @@
 Website::App.controllers :sender do
 
+  before do
+    if params['id']
+      @sender = Sender.get params['id']
+      halt 404, 'no such sender found' unless @sender
+    end
+  end
+
   get :index, map: '/' do
     redirect url(:sender, :list)
   end
@@ -33,18 +40,14 @@ Website::App.controllers :sender do
   end
 
   post :destroy, map: '/sender/delete/:id' do
-    sender = Sender.get params['id']
-    return json error: 'Sender record does not exist!' unless sender
-    if sender.destroy
+    if @sender.destroy
       json code: 200
     else
-      json error: "Can not remove sender #{sender.ip}"
+      json error: "Can not remove sender #{@sender.ip}"
     end
   end
 
   get :dashboard, map: '/sender/:id' do
-    @sender = Sender.get params['id']
-    halt 404, 'no sender found' unless @sender
     @title = 'dashboard'
     haml :'layouts/dashboard', layout: :application do
       haml :'sender/getting_started', layout: false
@@ -52,8 +55,6 @@ Website::App.controllers :sender do
   end
 
   get :setting, map: '/sender/:id/setting' do
-    @sender = Sender.get params['id']
-    halt 404, 'no sender found' unless @sender
     @title = 'setting'
     haml :'layouts/dashboard', layout: :application do
       haml :'sender/setting', layout: false
@@ -61,17 +62,37 @@ Website::App.controllers :sender do
   end
 
   get :logs, map: '/sender/:id/logs' do
-    @sender = Sender.get params['id']
-    halt 404, 'no sender found' unless @sender
     @title = 'logs'
     haml :'layouts/dashboard', layout: :application do
       haml :'sender/logs', layout: false
     end
   end
 
-  get :config_download, map: '/sender/:id/config/download' do
+  get :dns_records, map: '/sender/:id/dns-records' do
     @sender = Sender.get params['id']
     halt 404, 'no sender found' unless @sender
+    return json error: 'dns records has been verified' unless @sender.status == 'unverified'
+    json({
+             code: 200,
+             spf: get_txt_record(@sender.domain),
+             dkim: get_txt_record("mx._domainkey.#{@sender.domain}")
+         })
+  end
+
+  post :check_dns, map: '/sender/:id/check-dns' do
+    result = {
+        code: 200,
+        spf: get_txt_record(@sender.domain).include?(@sender.ip),
+        dkim: get_txt_record("mx._domainkey.#{@sender.domain}") == @sender.dkim_record
+    }
+    if result[:spf] && result[:dkim]
+      @sender.status = 'offline'
+      @sender.save!
+    end
+    return json(result)
+  end
+
+  get :config_download, map: '/sender/:id/config/download' do
     attachment 'config.json'
     {
         authSecret: @sender.secret,

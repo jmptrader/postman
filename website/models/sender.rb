@@ -16,7 +16,7 @@ class Sender
                unique: 'domain record has been used before',
                format: 'domain record is not validated'
            }
-  property :status, String, default: 'pending'
+  property :status, String, default: 'unverified'
 
   # secret keys
   property :secret, String
@@ -53,7 +53,7 @@ class Sender
   end
 
   def dkim_record
-    public_key = @public_key.lines.map { |line| line.chomp }
+    public_key = self.public_key.lines.map { |line| line.chomp }
     "v=DKIM1; k=rsa; p=#{public_key[1...-1].join}"
   end
 

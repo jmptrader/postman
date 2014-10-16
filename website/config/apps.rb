@@ -26,6 +26,7 @@
 # override these settings in the subapps as needed.
 #
 require 'json'
+require 'resolv'
 
 Padrino.configure_apps do
   # enable :sessions

@@ -1,0 +1,42 @@
+.ui.success.message
+  %i.close.icon
+  .header
+    = "Success! Your sender #{@sender.ip} was created."
+
+
+.grey.ui.icon.message.ui.form#form-checkDNS
+  %h3
+    Next We Need To Verify Your Domain
+  %table.ui.table.fluid.basic
+    %thead
+      %tr
+        %th.two.wide.column Type
+        %th.four.wide.column Hostname
+        %th.five.wide.column Enter This Value
+        %th.five.wide.column Current Value
+    %tbody
+      %tr
+        %td Txt
+        %td= @sender.domain
+        %td
+          .ui.fluid.small.input
+            =input_tag :text,disabled: 'disabled', value: "v=spf1 ip4:#{@sender.ip}  ~all"
+        %td.spf
+          .ui.fluid.small.input
+            =input_tag :text,disabled: 'disabled', id: 'txt-currentSPF'
+
+      %tr
+        %td Txt
+        %td= "mx._domainkey.#{@sender.domain}"
+        %td
+          .ui.fluid.field
+            %textarea{rows: 2, style: 'height: 4em; font-size: 14px; opacity: 1', disabled: 'disabled'}= @sender.dkim_record
+        %td.dkim
+          .ui.fluid.field
+            %textarea{rows: 2, style: 'height: 4em; font-size: 14px; opacity: 1', disabled: 'disabled', id: 'txt-currentDKIM'}
+
+.ui.secondary.button#btn-checkDNS
+  Check DNS Records
+
+- content_for :javascript do
+  = javascript_include_tag 'sender/dashboard'

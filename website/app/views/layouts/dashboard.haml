@@ -27,7 +27,7 @@
   .twelve.wide.column
     .ui.secondary.pointing.menu#nav-senderDashboard
       = link_to url(:sender, :dashboard, id: @sender.id), class: 'item index' do
-        = content_tag :i, '', class: 'download icon'
+        = content_tag :i, '', class: 'heart icon'
         = 'Getting Started'
       = link_to url(:sender, :setting, id: @sender.id), class: 'item setting' do
         = content_tag :i, '', class: 'setting icon'
