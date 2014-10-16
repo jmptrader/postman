@@ -1,7 +1,7 @@
 {
-    "name": "postman-middleware",
+    "name": "postman-api",
     "version": "0.0.1",
-    "description": "middleware server for jianxin postman",
+    "description": "api server for jianxin postman",
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,8 +9,10 @@
     "author": "jianxin",
     "license": "GPL",
     "dependencies": {
+        "buildmail": "^1.2.0",
+        "express": "*",
+        "redis": "*",
         "sequelize": "*",
-        "mysql": "*",
-        "redis": "*"
+        "mysql": "*"
     }
 }

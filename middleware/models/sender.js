@@ -5,6 +5,8 @@ global.Sender = model.define('Sender', {
             isIP: true
         }
     },
+    private_key: Model.STRING,
+    web_hook: Model.STRING,
     secret: Model.STRING,
     status: Model.STRING
 }, {
