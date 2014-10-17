@@ -16,6 +16,7 @@ func TestMXRecord(t *testing.T) {
 			asExpected = true
 		}
 	}
+	t.Log(records)
 	if !asExpected {
 		t.Error("Record return not as expected.")
 	}
@@ -23,22 +24,22 @@ func TestMXRecord(t *testing.T) {
 
 func TestRandMX(t *testing.T) {
 	record, err := MxRecord("qq.com")
+	t.Log(record)
 	if err != nil {
 		t.Error(err)
 	}
-	t.Log(record)
 	if !strings.Contains(record, "qq") {
 		t.Error("Record return wrong")
 	}
 }
 
 func TestBothCnameMX(t *testing.T) {
-	record, err := MxRecord("sogou.com")
+	record, err := MxRecord("gmail.com")
+	t.Log(record)
 	if err != nil {
 		t.Error(err)
 	}
-	t.Log(record)
-	if !strings.Contains(record, "sogou.com") {
+	if !strings.Contains(record, "google.com") {
 		t.Error("Record return wrong")
 	}
 }
