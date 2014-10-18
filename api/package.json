@@ -10,7 +10,10 @@
     "license": "GPL",
     "dependencies": {
         "buildmail": "^1.2.0",
+        "validator": "*",
+        "body-parser": "*",
         "express": "*",
+        "moment": "*",
         "redis": "*",
         "sequelize": "*",
         "mysql": "*"

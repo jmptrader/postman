@@ -1,10 +1,18 @@
 global.Sender = model.define('Sender', {
-    domain: Model.STRING,
-    api_key: Model.STRING,
+    ip: {type: Model.STRING, unique: true},
+    domain: {type: Model.STRING, unique: true},
     status: Model.STRING,
-    immediate: Model.BOOLEAN
+    secret: Model.STRING,
+    storage_key: Model.STRING,
+    api_key: Model.STRING,
+    private_key: Model.TEXT,
+    public_key: Model.TEXT,
+    web_hook: Model.STRING,
+    immediate: Model.BOOLEAN,
 }, {
     tableName: 'senders',
     updatedAt: 'updated_at',
     createdAt: 'created_at'
 });
+
+Sender.hasMany(Mail, {as: 'Mails', foreignKey: 'sender_id'});

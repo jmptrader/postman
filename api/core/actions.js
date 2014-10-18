@@ -8,12 +8,12 @@ module.exports = global.router = express.Router({
 
 // sender auth
 router.use(function (req, res, next) {
-    if (!req.param('params')) {
+    var params = req.param('params') || req.body.params;
+    if (!params) {
         return res.jsonp({code: 422, msg: 'params needed.'});
     }
-    var params;
     try {
-        params = JSON.parse(req.param('params'));
+        params = JSON.parse(params);
     } catch (e) {
         return res.jsonp({code: 406, msg: 'params not acceptable.'});
     }
@@ -29,13 +29,14 @@ router.use(function (req, res, next) {
         }
     }).success(function (sender) {
         if (!sender) {
-            return res.jsonp({code: 404, msg: 'sender not found.'});
+            return res.jsonp({code: 404, error: 'sender not found.'});
         }
         var md5sum = crypto.createHash('md5');
         md5sum.update(req.param('params') + sender.api_key);
         if (req.params['secret'] !== md5sum.digest('hex')) {
-            return res.jsonp({code: 401, msg: 'sender unauthorized.'});
+            return res.jsonp({code: 401, error: 'sender unauthorized.'});
         }
+        req.$params = params;
         req.sender = sender;
         next();
     });

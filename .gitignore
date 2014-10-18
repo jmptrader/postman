@@ -27,6 +27,7 @@ _cgo_export.*
 _testmain.go
 *.exe
 *.test
+*.ml
 config.json
 database.json
 postman/src/postman/main/postman/postman

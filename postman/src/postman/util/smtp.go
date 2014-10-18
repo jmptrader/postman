@@ -14,6 +14,7 @@ import (
 	"net/textproto"
 	"os"
 	"strings"
+	"time"
 )
 
 // A StmpClient represents a client connection to an SMTP server.
@@ -274,6 +275,7 @@ func SendMail(from string, to string, msg []byte) error {
 		panic(err)
 	}
 	if os.Getenv("POSTMAN_DEBUG_MODE") == "true" {
+		<-time.After(time.Second * 2)
 		return debugSendMail(addr+":25", hostname, from, to)
 	}
 	return sendMail(addr+":25", hostname, from, to, msg, false)

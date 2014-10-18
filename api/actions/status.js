@@ -1,4 +1,4 @@
-router.get('/status', function (req, res) {
+router.all('/status', function (req, res) {
     return res.jsonp({
         code: 200,
         status: req.sender.status,
