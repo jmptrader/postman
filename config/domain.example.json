@@ -1,0 +1,17 @@
+{
+  "api": {
+    "domain": "api.jianxin.io",
+    "port": 80,
+    "protocol": "https"
+  },
+  "middleware": {
+    "domain": "jianxin.io",
+    "port": 9002,
+    "protocol": "tls"
+  },
+  "website": {
+    "domain": "jianxin.io",
+    "port": 80,
+    "protocol": "http"
+  }
+}

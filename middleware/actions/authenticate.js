@@ -16,7 +16,10 @@ Action.register('auth', function (args) {
         "senderId": c.sender.id
     });
     c.sender.status = 'online';
-    c.sender.save(['status']).success(function () {
+    c.sender.save(['status']).complete(function (err) {
+        if (err) {
+            console.log('sender: ' + c.sender.ip + ' update status ', err);
+        }
         console.log('sender: ' + c.sender.ip + ' auth success.');
         this.auth = true;
     });

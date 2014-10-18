@@ -7,8 +7,8 @@ require('./core/model');
 
 var options = {
     requestCert: true,
-    key: fs.readFileSync('config/pems/private-key.pem'),
-    cert: fs.readFileSync('config/pems/public-cert.pem')
+    key: fs.readFileSync('../config/pems/middleware/private-key.pem'),
+    cert: fs.readFileSync('../config/pems/middleware/public-cert.pem')
 };
 
 // start server and load core

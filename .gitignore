@@ -28,6 +28,8 @@ _testmain.go
 *.exe
 *.test
 *.ml
+*.pem
 config.json
 database.json
+domain.json
 postman/src/postman/main/postman/postman

@@ -9,6 +9,7 @@
     "author": "jianxin",
     "license": "GPL",
     "dependencies": {
+        "underscore": "*",
         "buildmail": "^1.2.0",
         "validator": "*",
         "body-parser": "*",

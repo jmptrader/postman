@@ -2,6 +2,7 @@ var BuildMail = require('buildmail');
 var moment = require('moment');
 var util = require('util');
 var _ = require('validator');
+var hostname = require('../../config/domain').api.domain;
 
 var createMail = function (mail) {
     var message;
@@ -23,6 +24,7 @@ var createMail = function (mail) {
         to: mail.to,
         subject: mail.subject
     });
+    mail['reply-to'] && message.setHeader('reply-to', mail['reply-to']);
     return message;
 };
 
@@ -31,7 +33,7 @@ var buildMailBuf = function (req, mail, message, cb) {
     if (!mail.headers.received) {
         message.addHeader('received',
             util.format('from [%s] (%s [%s])\r\nby %s via HTTP for <%s>;\r\n%s',
-                req.ip, 'unknown', req.ip, req.host,
+                req.ip, 'unknown', req.ip, hostname,
                 message.getAddresses()['to'][0]['address'],
                 moment().format("ddd, D MMM YYYY HH:mm:ss ZZ")
             ));
@@ -73,7 +75,10 @@ router.all('/message', function (req, res) {
             if (err) {
                 return res.jsonp({code: 500, error: 'Save mail record with error.'});
             }
-            req.sender.addMail(mailRecord).success(function () {
+            req.sender.addMail(mailRecord).complete(function (err) {
+                if (err) {
+                    return res.jsonp({code: 500, error: 'Unknown error.'});
+                }
                 Mail.write(mailRecord.id, mailBuf, function () {
                     res.jsonp({
                         code: 200,

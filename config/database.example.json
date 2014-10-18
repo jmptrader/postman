@@ -1,0 +1,8 @@
+{
+  "dialect": "mysql",
+  "database": "jianxin",
+  "username": "username",
+  "password": "password",
+  "host": "localhost",
+  "port": 3306
+}

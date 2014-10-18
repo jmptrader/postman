@@ -9,6 +9,7 @@
     "author": "jianxin",
     "license": "GPL",
     "dependencies": {
+        "underscore": "*",
         "sequelize": "*",
         "mysql": "*",
         "redis": "*"

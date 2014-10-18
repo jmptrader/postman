@@ -63,10 +63,12 @@ func (c *Client) Serve() {
 			reqChan <- msg.Body
 		}
 	})
+LOOP:
+	c.authBlockChan = make(chan bool)
 	c.serve()
 	if c.online {
 		<-time.After(time.Second * 10)
-		c.Serve()
+		goto LOOP
 	}
 }
 

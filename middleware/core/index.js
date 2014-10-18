@@ -37,8 +37,8 @@ var init = function () {
                 ne: 'unverified'
             }
         }
-    }).success(function (sender) {
-        if (!sender) {
+    }).complete(function (err, sender) {
+        if (err || !sender) {
             return c.command('exit', {
                 "msg": 'sender not found'
             });
@@ -91,7 +91,5 @@ module.exports = function () {
                 sys.puts('TLS connection ' + c.sender.ip + ' closed');
             });
         }
-        // TODO: warning should be raised to tell administrator: sender closed.
-        // all command in queue will resend after reconnect.
     });
 };

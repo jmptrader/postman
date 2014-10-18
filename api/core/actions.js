@@ -27,8 +27,8 @@ router.use(function (req, res, next) {
                 ne: 'unverified'
             }
         }
-    }).success(function (sender) {
-        if (!sender) {
+    }).complete(function (err, sender) {
+        if (err || !sender) {
             return res.jsonp({code: 404, error: 'sender not found.'});
         }
         var md5sum = crypto.createHash('md5');
