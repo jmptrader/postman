@@ -2,7 +2,7 @@ var path = require('path');
 var Sequelize = require('sequelize');
 var _ = require('underscore');
 
-var database = require('../../config/database');
+var database = require('../../config/database').mysql;
 
 global.Model = Sequelize;
 
@@ -15,7 +15,7 @@ global.model = new Sequelize(
     })
 );
 
-require("fs").readdirSync("./models").forEach(function (file) {
+require("fs").readdirSync(path.join(__dirname, '../models')).forEach(function (file) {
     if (path.extname(file) !== '.js') return;
-    require("../models/" + file);
+    require(path.join(__dirname, '../models', file));
 });

@@ -79,12 +79,17 @@ router.all('/message', function (req, res) {
                 if (err) {
                     return res.jsonp({code: 500, error: 'Unknown error.'});
                 }
-                Mail.write(mailRecord.id, mailBuf, function () {
-                    res.jsonp({
-                        code: 200,
-                        msg: 'in queue',
-                        id: mailRecord.id
-                    })
+                newCommand(req.sender.id, {command: 'sendMail', mailId: mailRecord.id}, function (err) {
+                    if (err) {
+                        return res.jsonp({code: 500, error: 'Unknown error.'});
+                    }
+                    Mail.write(mailRecord.id, mailBuf, function () {
+                        res.jsonp({
+                            code: 200,
+                            msg: 'in queue',
+                            id: mailRecord.id
+                        })
+                    });
                 });
             });
         });

@@ -42,7 +42,7 @@ router.use(function (req, res, next) {
     });
 });
 
-require("fs").readdirSync("./actions").forEach(function (file) {
+require("fs").readdirSync(path.join(__dirname, '../actions')).forEach(function (file) {
     if (path.extname(file) !== '.js') return;
-    require("../actions/" + file);
+    require(path.join(__dirname, '../actions', file));
 });

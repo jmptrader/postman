@@ -30,6 +30,10 @@ func main() {
 		return &actions.AuthenticatedMsg{}
 	}, actions.Authenticated)
 
+	postman.Tunnel.Register("sendMail", func() interface{} {
+		return &actions.MailMsg{}
+	}, actions.SendMail)
+
 	// connect to middleware
 	postman.Tunnel.Serve()
 }

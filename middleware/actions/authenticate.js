@@ -20,6 +20,7 @@ Action.register('auth', function (args) {
         if (err) {
             console.log('sender: ' + c.sender.ip + ' update status ', err);
         }
+        senderMap[c.sender.id] = c;
         console.log('sender: ' + c.sender.ip + ' auth success.');
         this.auth = true;
     });

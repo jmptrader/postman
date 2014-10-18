@@ -6,6 +6,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 require('./core/models');
+require('./core/command');
 
 app.use('/:domain/:secret',
     require('./core/actions')

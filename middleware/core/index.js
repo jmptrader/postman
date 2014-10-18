@@ -22,9 +22,9 @@ global.Action = {
 };
 
 // load all actions
-require("fs").readdirSync("./actions").forEach(function (file) {
+require("fs").readdirSync(path.join(__dirname, '../actions')).forEach(function (file) {
     if (path.extname(file) !== '.js') return;
-    require("../actions/" + file);
+    require(path.join(__dirname, '../actions', file));
 });
 
 // check sender ip
@@ -85,9 +85,10 @@ module.exports = function () {
     });
     // trigger when sender close
     c.addListener('close', function () {
+        delete senderMap[c.sender.id];
         if (c.sender) {
             c.sender.status = 'offline';
-            c.sender.save(['status']).success(function () {
+            c.sender.save(['status']).complete(function () {
                 sys.puts('TLS connection ' + c.sender.ip + ' closed');
             });
         }

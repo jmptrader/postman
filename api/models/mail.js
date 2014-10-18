@@ -8,7 +8,7 @@ global.Mail = model.define('Mail', {
     from: Model.STRING,
     to: Model.STRING,
     subject: Model.STRING,
-    web_hook: Model.STRING,
+    block: Model.BOOLEAN,
     immediate: Model.BOOLEAN
 }, {
     tableName: 'mails',
@@ -54,7 +54,7 @@ Mail.read = function (mailId, cb) {
     var filePath = path.join(archiveDir, moment().format("YYYYMMDD"), mailId + MAIL_FILE_EXT);
     fs.readFile(filePath, function (err, data) {
         if (err) return cb(null);
-        cb(data);
+        cb(data.toString());
     });
 };
 
