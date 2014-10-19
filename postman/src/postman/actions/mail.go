@@ -3,19 +3,17 @@ package actions
 import (
 	"log"
 
+	"postman/models/mail"
 	"postman/tunnel"
 )
 
-type MailMsg struct {
-	Content   string `json:"content"`
-	Frome     string `json:"from"`
-	To        string `json:"to"`
-	WebHook   string `json:"web_hook"`
-	Immediate string `json:"immediate"`
-	Block     string `json:"block"`
-}
-
 func SendMail(c *tunnel.Client, args interface{}) {
-	mail := args.(*MailMsg)
-	log.Print(mail.Content)
+	m := args.(*mail.Mail)
+	log.Printf("mail: receive new mail for %s", m.To)
+	err := m.Create(c)
+	if err != nil {
+		log.Printf("mail: create mail %s", err.Error())
+		return
+	}
+	return
 }

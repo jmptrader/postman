@@ -28,14 +28,15 @@ type Action struct {
 }
 
 type Config struct {
-	Conf   *tls.Config
-	Store  store.Store
-	Remote string
-	Secret string
+	Conf     *tls.Config
+	Store    store.Store
+	Remote   string
+	Secret   string
+	Hostname string
 }
 
 type Client struct {
-	config          Config
+	Config          Config
 	RequestChan     chan interface{}
 	authBlockChan   chan bool
 	actionMap       map[string]*Action
@@ -76,7 +77,7 @@ LOOP:
 // exit if error meet
 func (c *Client) Auth(str string) {
 	hasher := md5.New()
-	hasher.Write([]byte(c.config.Secret + str))
+	hasher.Write([]byte(c.Config.Secret + str))
 	cmd := newCommand(c, "auth", map[string]string{
 		"result": hex.EncodeToString(hasher.Sum(nil)),
 	})
@@ -143,7 +144,7 @@ func (c *Client) handleConn() {
 	for {
 		reply, err := c.buf.ReadString(LINEFEED)
 		if err == io.EOF {
-			log.Printf("\033[1;33;40mremote server: %s disconnect.\033[m\r\nReconnect will start after 10 seconds.", c.config.Remote)
+			log.Printf("\033[1;33;40mremote server: %s disconnect.\033[m\r\nReconnect will start after 10 seconds.", c.Config.Remote)
 			return
 		}
 		if !c.online {
@@ -190,7 +191,7 @@ func (c *Client) handleReq() {
 		} else {
 			cmdSt, _ := command.(*Command)
 			cmd, cmdId = cmdSt.String(), cmdSt.Id
-			c.config.Store.Set(COMMAND_KEY_PREFIX+cmdId, cmd)
+			c.Config.Store.Set(COMMAND_KEY_PREFIX+cmdId, cmd)
 		}
 		// then send it
 		err := c.sendCmd(cmd)
@@ -203,7 +204,7 @@ func (c *Client) handleReq() {
 			}()
 			return
 		}
-		c.config.Store.Destroy(COMMAND_KEY_PREFIX + cmdId)
+		c.Config.Store.Destroy(COMMAND_KEY_PREFIX + cmdId)
 	}
 }
 
@@ -216,7 +217,7 @@ func (c *Client) Close() {
 
 // start tls client and handshake
 func (c *Client) serve() {
-	conn, err := tls.Dial("tcp", c.config.Remote, c.config.Conf)
+	conn, err := tls.Dial("tcp", c.Config.Remote, c.Config.Conf)
 	if err != nil {
 		log.Printf("\033[1;33;40mclient: %s.\033[m\r\nReconnect will start after 10 seconds.", err)
 		return
@@ -235,8 +236,8 @@ func (c *Client) serve() {
 	go c.handleReq()
 	go func() {
 		// resend all fail request
-		for _, key := range c.config.Store.Keys(COMMAND_KEY_PREFIX) {
-			cmd, ok := c.config.Store.Get(key)
+		for _, key := range c.Config.Store.Keys(COMMAND_KEY_PREFIX) {
+			cmd, ok := c.Config.Store.Get(key)
 			if ok {
 				c.RequestChan <- cmd
 			}

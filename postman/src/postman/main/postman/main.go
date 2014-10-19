@@ -2,6 +2,7 @@ package main
 
 import (
 	"postman/actions"
+	"postman/models/mail"
 	"postman/store"
 	"postman/tunnel"
 )
@@ -31,7 +32,7 @@ func main() {
 	}, actions.Authenticated)
 
 	postman.Tunnel.Register("sendMail", func() interface{} {
-		return &actions.MailMsg{}
+		return &mail.Mail{}
 	}, actions.SendMail)
 
 	// connect to middleware

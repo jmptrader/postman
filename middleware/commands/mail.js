@@ -6,12 +6,12 @@ Command.register('sendMail', function (cmd) {
         }).complete(function (err, mail) {
             if (err) return;
             c.command('sendMail', {
+                id: String(mail.id),
                 content: data,
                 from: mail.from,
                 to: mail.to,
                 web_hook: c.sender.web_hook,
-                immediate: mail.immediate,
-                block: mail.block
+                immediate: mail.immediate
             })
         });
     });

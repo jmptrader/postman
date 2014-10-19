@@ -8,7 +8,7 @@ type Tunnel interface {
 // create new tunnel
 func New(config Config) Tunnel {
 	return &Client{
-		config:          config,
+		Config:          config,
 		RequestChan:     make(chan interface{}, 12),
 		actionMap:       map[string]*Action{},
 		requestBlockMap: map[string]chan string{},

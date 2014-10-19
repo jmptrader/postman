@@ -98,7 +98,8 @@ Website::App.controllers :sender do
         authSecret: @sender.secret,
         storeSecret: @sender.storage_key,
         remoteAddr: settings.middleware_addr,
-        createAt: @sender.created_at.iso8601(3)
+        createAt: @sender.created_at.iso8601(3),
+        hostname: @sender.domain
     }.to_json
   end
 end

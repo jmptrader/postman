@@ -2,5 +2,6 @@
     "authSecret": "Zx+qB1L0oPZubOcsL/S6tjwbugbCRagX",
     "storeSecret": "+syZJnfrbquJpdlfBn2QFHfgjC2KM/q+",
     "remoteAddr": "127.0.0.1:9002",
-    "createAt": "2014-08-01T00:00:01.700Z"
+    "createAt": "2014-08-01T00:00:01.700Z",
+    "hostname": "jianxin.io"
 }

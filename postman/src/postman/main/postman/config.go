@@ -21,6 +21,7 @@ type Config struct {
 	AuthSecret  string    `json:"authSecret"`
 	StoreSecret string    `json:"storeSecret"`
 	RemoteAddr  string    `json:"remoteAddr"`
+	Hostname    string    `json:"hostname"`
 	CreatedAt   time.Time `json:"createdAt"`
 }
 
@@ -72,9 +73,10 @@ func tunnelConfig(st store.Store) tunnel.Config {
 		InsecureSkipVerify: true,
 	}
 	return tunnel.Config{
-		Conf:   conf,
-		Remote: config.RemoteAddr,
-		Secret: config.AuthSecret,
-		Store:  st,
+		Conf:     conf,
+		Remote:   config.RemoteAddr,
+		Hostname: config.Hostname,
+		Secret:   config.AuthSecret,
+		Store:    st,
 	}
 }
