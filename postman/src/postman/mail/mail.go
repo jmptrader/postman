@@ -39,13 +39,13 @@ func (m *Mail) Create() (err error) {
 	return
 }
 
-func GetMail(messageId string) (m Mail, err error) {
+func Get(messageId string) (m *Mail, err error) {
 	mailStr, ok := postman.Store.Get(mailStoragePrefix + messageId)
 	if !ok {
 		err = errors.New("no mail record found.")
 		return
 	}
-	err = json.Unmarshal([]byte(mailStr), &m)
+	err = json.Unmarshal([]byte(mailStr), m)
 	return
 }
 
@@ -79,4 +79,8 @@ func (m *Mail) CallWebHook(params map[string]string) (err error) {
 	}
 	_, err = httpClient.PostForm(m.WebHook, v)
 	return
+}
+
+func (m *Mail) Deliver() error {
+	return nil
 }

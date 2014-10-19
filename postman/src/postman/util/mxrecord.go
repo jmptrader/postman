@@ -5,11 +5,9 @@ import (
 	"math/rand"
 	"net"
 	"strings"
-
-	"postman/cache"
 )
 
-var mxCache = cache.NewCache(7200)
+var mxCache = NewCache(7200)
 
 func mxRecords(addr string) (records []string, err error) {
 	value, ok := mxCache.Get(addr)
