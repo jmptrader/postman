@@ -1,6 +1,7 @@
 var fs = require('fs');
 var tls = require('tls');
 var sys = require('sys');
+var port = require('../config/domain').middleware.port;
 
 // all online sender hash.
 global.senderMap = {};
@@ -26,4 +27,4 @@ tls.createServer(options, function (cleartextStream) {
 
     cleartextStream.setEncoding('utf8');
     cleartextStream.pipe(cleartextStream);
-}).listen(9002);
+}).listen(port);

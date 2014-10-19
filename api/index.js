@@ -1,5 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var port = require('../config/domain').api.port;
 
 var app = express();
 app.use(bodyParser.json());
@@ -12,6 +13,6 @@ app.use('/:domain/:secret',
     require('./core/actions')
 );
 
-app.listen(9001, function () {
+app.listen(port, function () {
     console.log('Api server is starting now.')
 });

@@ -17,6 +17,7 @@ class Sender
                format: 'domain record is not validated'
            }
   property :status, String, default: 'unverified'
+  property :deliver_frequency, Integer, default: 10
 
   # secret keys
   property :secret, String
@@ -30,6 +31,8 @@ class Sender
 
   property :updated_at, DateTime
   property :created_at, DateTime
+
+  has n, :frequencies, child_key: [:sender_id]
 
   private
   def random_secret(len)

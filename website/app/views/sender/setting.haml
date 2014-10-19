@@ -1,1 +1,54 @@
-Here is setting.
+%h2 Basic settings
+
+.ui.form
+  .field
+    %label Web Hook - HTTP POST will be made to your URLs when events occur with your messages.(blank for disable)
+    .ui.fluid.input
+      %input(type="text" value="" placeholder="Web Hook" )
+  .field
+    .ui.checkbox
+      %input(type="checkbox" id="check-senderImmediately")
+      %label(for="check-senderImmediately") Deliver mail immediately rather than in queue.
+
+  .ui.blue.submit.button Save
+
+.ui.horizontal.icon.divider
+  %i.circular.rocket.icon
+
+%h2 Deliver Settings
+
+%p
+  Default mail deliver frequency for a certain email service provider / ESP  (per minute)
+.ui.action.input
+  =input_tag :number, :value => @sender.deliver_frequency
+  .ui.teal.right.labeled.icon.button
+    %i.legal.icon
+    Set
+
+.ui.horizontal.icon.divider
+  %i.circular.exchange.icon
+
+%p
+  Special deliver frequency roles
+
+  %table.ui.table.segment.sender-list
+    %thead
+      %tr
+        %th.seven.wide.column domain
+        %th.five.wide.column frequency
+        %th Action
+    %tbody
+      -@sender.frequencies.each do |frequency|
+        %tr
+          %td= frequency.domain
+          %td= frequency.deliver_frequency
+          %td
+            = link_to 'Remove', url(:sender, :destroy, id: sender.id), class: 'remove'
+      - if @sender.frequencies.size == 0
+        %tr
+          %td(colspan="3")
+            No record found
+
+.ui.basic.button
+  %i.add.icon
+  Create new role

@@ -5,10 +5,11 @@ global.Sender = model.define('Sender', {
     secret: Model.STRING,
     storage_key: Model.STRING,
     api_key: Model.STRING,
+    deliver_frequency: Model.INTEGER,
     private_key: Model.TEXT,
     public_key: Model.TEXT,
     web_hook: Model.STRING,
-    immediate: Model.BOOLEAN,
+    immediate: Model.BOOLEAN
 }, {
     tableName: 'senders',
     updatedAt: 'updated_at',
@@ -16,3 +17,4 @@ global.Sender = model.define('Sender', {
 });
 
 Sender.hasMany(Mail, {as: 'Mails', foreignKey: 'sender_id'});
+Sender.hasMany(Frequency, {as: 'Frequencies', foreignKey: 'sender_id'});

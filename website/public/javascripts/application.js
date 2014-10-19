@@ -31,4 +31,5 @@
         $(this).addClass('active');
     });
 
+    $('.ui.checkbox').checkbox();
 }(jQuery);
