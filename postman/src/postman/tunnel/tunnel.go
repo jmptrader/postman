@@ -1,14 +1,23 @@
 package tunnel
 
 type Tunnel interface {
-	Register(action string, instance func() interface{}, handler func(*Client, interface{}))
+	// auth to remove server
+	Auth(str string)
+	// set client authenticated
+	SetAuthenticated()
+	Request(action string, args interface{}) string
+	// send request and will not return util get response from remote
+	RequestBlock(action string, args interface{}) (string, error)
+	Register(action string, instance func() interface{}, handler func(interface{}))
 	Serve()
+	// exit and close connection
+	Close()
 }
 
 // create new tunnel
 func New(config Config) Tunnel {
-	return &Client{
-		Config:          config,
+	return &Proto{
+		config:          config,
 		RequestChan:     make(chan interface{}, 12),
 		actionMap:       map[string]*Action{},
 		requestBlockMap: map[string]chan string{},

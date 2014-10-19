@@ -3,14 +3,13 @@ package actions
 import (
 	"log"
 
-	"postman/models/mail"
-	"postman/tunnel"
+	"postman/mail"
 )
 
-func SendMail(c *tunnel.Client, args interface{}) {
+func SendMail(args interface{}) {
 	m := args.(*mail.Mail)
 	log.Printf("mail: receive new mail for %s", m.To)
-	err := m.Create(c)
+	err := m.Create()
 	if err != nil {
 		log.Printf("mail: create mail %s", err.Error())
 		return

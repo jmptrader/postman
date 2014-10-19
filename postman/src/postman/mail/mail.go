@@ -10,9 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"postman/store"
-	"postman/tunnel"
+	"postman/client"
 )
+
+var postman = client.Postman
 
 type Mail struct {
 	Id        string `json:"id"`
@@ -24,32 +25,27 @@ type Mail struct {
 	WebHook   string `json:"web_hook,omitempty"`
 	Log       string `json:"log,omitempty"`
 	Sender    string `json:"sender"`
-
-	store store.Store
 }
 
 const mailStoragePrefix = "mail:"
 
-func (m *Mail) Create(c *tunnel.Client) (err error) {
-	m.Sender = c.Config.Hostname
-	m.From = fmt.Sprintf("bounce+%s-%s@%s", m.Id, strings.Replace(m.To, "@", "=", -1), m.Sender)
+func (m *Mail) Create() (err error) {
+	m.From = fmt.Sprintf("bounce+%s-%s@%s", m.Id, strings.Replace(m.To, "@", "=", -1), postman.Hostname)
 	mailStr, err := json.Marshal(m)
 	if err != nil {
 		return
 	}
-	err = c.Config.Store.Set(mailStoragePrefix+m.Id, string(mailStr))
+	err = postman.Store.Set(mailStoragePrefix+m.Id, string(mailStr))
 	return
 }
 
-func GetMail(c *tunnel.Client, messageId string) (m Mail, err error) {
-	store := c.Config.Store
-	mailStr, ok := store.Get(mailStoragePrefix + messageId)
+func GetMail(messageId string) (m Mail, err error) {
+	mailStr, ok := postman.Store.Get(mailStoragePrefix + messageId)
 	if !ok {
 		err = errors.New("no mail record found.")
 		return
 	}
 	err = json.Unmarshal([]byte(mailStr), &m)
-	m.store = store
 	return
 }
 
@@ -60,7 +56,7 @@ func (m *Mail) addr() string {
 
 func (m *Mail) Update() error {
 	mailStr, _ := json.Marshal(m)
-	return m.store.Set(mailStoragePrefix+m.Id, string(mailStr))
+	return postman.Store.Set(mailStoragePrefix+m.Id, string(mailStr))
 }
 
 func (m *Mail) CallWebHook(params map[string]string) (err error) {
@@ -75,7 +71,7 @@ func (m *Mail) CallWebHook(params map[string]string) (err error) {
 		Transport: tr,
 	}
 	v := url.Values{}
-	v.Set("sender", m.Sender)
+	v.Set("sender", postman.Hostname)
 	v.Add("id", m.Id)
 	v.Add("recipient", m.To)
 	for key, value := range params {

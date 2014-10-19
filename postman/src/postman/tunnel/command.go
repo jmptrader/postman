@@ -17,31 +17,31 @@ type Command struct {
 	Id      string
 	Action  string
 	Args    interface{}
-	Handler func(*Client, interface{})
-	client  *Client
+	Handler func(interface{})
+	proto   *Proto
 }
 
 // create command with action and args
-func newCommand(client *Client, action string, args interface{}) *Command {
+func newCommand(proto *Proto, action string, args interface{}) *Command {
 	return &Command{
 		Id:     "-" + util.RandSeq(4),
 		Action: action,
 		Args:   args,
-		client: client,
+		proto:  proto,
 	}
 }
 
 // parse request string to command struct
-func receiveCommand(client *Client, command string) (c *Command, err error) {
+func receiveCommand(proto *Proto, command string) (c *Command, err error) {
 	commandArr := strings.SplitN(command, commandSep, 3)
 	c = &Command{
 		Id:     commandArr[0],
 		Action: commandArr[1],
-		client: client,
+		proto:  proto,
 	}
-	actionSt, ok := client.actionMap[c.Action]
+	actionSt, ok := proto.actionMap[c.Action]
 	if !ok {
-		log.Printf("action %s not found in client", c.Action)
+		log.Printf("action %s not found in proto", c.Action)
 		err = errors.New("action not found")
 		return
 	}

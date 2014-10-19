@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-var c = &Client{}
+var c = &Proto{}
 var a = newCommand(c, "Test", map[string]string{"a": "b"})
 
 type testSt struct {
@@ -12,12 +12,11 @@ type testSt struct {
 	age  int
 }
 
-var cl = &Client{}
+var cl = &Proto{}
 var b = newCommand(c, "Demo", testSt{"vt", 23})
 
 func TestCommandGenerate(t *testing.T) {
-	if len(a.Id) != 16 {
+	if len(a.Id) != 5 {
 		t.Fatalf("Command generate with wrong ID: %s", a.String())
 	}
-	t.Log(a.String())
 }

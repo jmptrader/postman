@@ -1,14 +1,14 @@
 package actions
 
 import (
-	"postman/tunnel"
+	"postman/client"
 )
 
 type HeloMsg struct {
 	Key string `json:"auth_key"`
 }
 
-func Helo(c *tunnel.Client, args interface{}) {
+func Helo(args interface{}) {
 	heloMsg := args.(*HeloMsg)
-	c.Auth(heloMsg.Key)
+	client.Postman.Tunnel.Auth(heloMsg.Key)
 }

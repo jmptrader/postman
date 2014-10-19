@@ -24,19 +24,18 @@ const (
 
 type Action struct {
 	Instance func() interface{}
-	Handler  func(*Client, interface{})
+	Handler  func(interface{})
 }
 
 type Config struct {
-	Conf     *tls.Config
-	Store    store.Store
-	Remote   string
-	Secret   string
-	Hostname string
+	Conf   *tls.Config
+	Remote string
+	Secret string
+	Store  store.Store
 }
 
-type Client struct {
-	Config          Config
+type Proto struct {
+	config          Config
 	RequestChan     chan interface{}
 	authBlockChan   chan bool
 	actionMap       map[string]*Action
@@ -52,12 +51,12 @@ type response struct {
 	Body string `json:"body"`
 }
 
-func (c *Client) Serve() {
+func (c *Proto) Serve() {
 	c.online = true
 	// add response support
 	c.Register("response", func() interface{} {
 		return &response{}
-	}, func(c *Client, args interface{}) {
+	}, func(args interface{}) {
 		msg := args.(*response)
 		reqChan, ok := c.requestBlockMap[msg.Id]
 		if ok {
@@ -75,9 +74,9 @@ LOOP:
 
 // send auth command to server
 // exit if error meet
-func (c *Client) Auth(str string) {
+func (c *Proto) Auth(str string) {
 	hasher := md5.New()
-	hasher.Write([]byte(c.Config.Secret + str))
+	hasher.Write([]byte(c.config.Secret + str))
 	cmd := newCommand(c, "auth", map[string]string{
 		"result": hex.EncodeToString(hasher.Sum(nil)),
 	})
@@ -87,19 +86,19 @@ func (c *Client) Auth(str string) {
 	}
 }
 
-func (c *Client) SetAuthenticated() {
+func (c *Proto) SetAuthenticated() {
 	c.authBlockChan <- true
 }
 
 // send command to remote server
-func (c *Client) Request(action string, args interface{}) string {
+func (c *Proto) Request(action string, args interface{}) string {
 	command := newCommand(c, action, args)
 	c.RequestChan <- command
 	return command.Id
 }
 
 // send command and wait for response with timeout
-func (c *Client) RequestBlock(action string, args interface{}) (res string, err error) {
+func (c *Proto) RequestBlock(action string, args interface{}) (res string, err error) {
 	cmdId := c.Request(action, args)
 	c.requestBlockMap[cmdId] = make(chan string)
 	defer func() {
@@ -116,7 +115,7 @@ func (c *Client) RequestBlock(action string, args interface{}) (res string, err 
 }
 
 // register action for client
-func (c *Client) Register(action string, instance func() interface{}, handler func(*Client, interface{})) {
+func (c *Proto) Register(action string, instance func() interface{}, handler func(interface{})) {
 	_, ok := c.actionMap[action]
 	if ok {
 		log.Fatalf("register action %s can not be the same", action)
@@ -128,7 +127,7 @@ func (c *Client) Register(action string, instance func() interface{}, handler fu
 }
 
 // handle request content
-func (c *Client) handle(reply string) {
+func (c *Proto) handle(reply string) {
 	command, err := receiveCommand(c, reply)
 	if err != nil {
 		if DEBUG {
@@ -136,15 +135,15 @@ func (c *Client) handle(reply string) {
 		}
 		return
 	}
-	command.Handler(c, command.Args)
+	command.Handler(command.Args)
 }
 
 // read buffer from server
-func (c *Client) handleConn() {
+func (c *Proto) handleConn() {
 	for {
 		reply, err := c.buf.ReadString(LINEFEED)
 		if err == io.EOF {
-			log.Printf("\033[1;33;40mremote server: %s disconnect.\033[m\r\nReconnect will start after 10 seconds.", c.Config.Remote)
+			log.Printf("\033[1;33;40mremote server: %s disconnect.\033[m\r\nReconnect will start after 10 seconds.", c.config.Remote)
 			return
 		}
 		if !c.online {
@@ -166,7 +165,7 @@ func (c *Client) handleConn() {
 }
 
 // send command string to server
-func (c *Client) sendCmd(cmd string) error {
+func (c *Proto) sendCmd(cmd string) error {
 	if DEBUG {
 		log.Print("SEND: ", cmd)
 	}
@@ -176,7 +175,7 @@ func (c *Client) sendCmd(cmd string) error {
 }
 
 // send command to server
-func (c *Client) handleReq() {
+func (c *Proto) handleReq() {
 	// block until authenticated
 	<-c.authBlockChan
 	close(c.authBlockChan)
@@ -191,7 +190,7 @@ func (c *Client) handleReq() {
 		} else {
 			cmdSt, _ := command.(*Command)
 			cmd, cmdId = cmdSt.String(), cmdSt.Id
-			c.Config.Store.Set(COMMAND_KEY_PREFIX+cmdId, cmd)
+			c.config.Store.Set(COMMAND_KEY_PREFIX+cmdId, cmd)
 		}
 		// then send it
 		err := c.sendCmd(cmd)
@@ -204,20 +203,20 @@ func (c *Client) handleReq() {
 			}()
 			return
 		}
-		c.Config.Store.Destroy(COMMAND_KEY_PREFIX + cmdId)
+		c.config.Store.Destroy(COMMAND_KEY_PREFIX + cmdId)
 	}
 }
 
 // close conn from client
-func (c *Client) Close() {
+func (c *Proto) Close() {
 	c.online = false
 	close(c.RequestChan)
 	c.conn.Close()
 }
 
 // start tls client and handshake
-func (c *Client) serve() {
-	conn, err := tls.Dial("tcp", c.Config.Remote, c.Config.Conf)
+func (c *Proto) serve() {
+	conn, err := tls.Dial("tcp", c.config.Remote, c.config.Conf)
 	if err != nil {
 		log.Printf("\033[1;33;40mclient: %s.\033[m\r\nReconnect will start after 10 seconds.", err)
 		return
@@ -236,8 +235,8 @@ func (c *Client) serve() {
 	go c.handleReq()
 	go func() {
 		// resend all fail request
-		for _, key := range c.Config.Store.Keys(COMMAND_KEY_PREFIX) {
-			cmd, ok := c.Config.Store.Get(key)
+		for _, key := range c.config.Store.Keys(COMMAND_KEY_PREFIX) {
+			cmd, ok := c.config.Store.Get(key)
 			if ok {
 				c.RequestChan <- cmd
 			}

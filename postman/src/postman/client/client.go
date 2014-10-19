@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"crypto/tls"
@@ -25,12 +25,27 @@ type Config struct {
 	CreatedAt   time.Time `json:"createdAt"`
 }
 
+type Client struct {
+	Tunnel   tunnel.Tunnel
+	Store    store.Store
+	Hostname string
+}
+
+var Postman *Client
 var config Config
 var dbDir, configDir string
 
-// get postman dbDir and configDir from env path
-// set as default if not found
 func init() {
+	configInit()
+	st := store.New(dbDir, config.StoreSecret)
+	Postman = &Client{
+		Store:    st,
+		Tunnel:   tunnel.New(getTunnelConfig(st)),
+		Hostname: config.Hostname,
+	}
+}
+
+func configInit() {
 	var err error
 	dbDir = os.Getenv("POSTMAN_DB_DIR")
 	if len(dbDir) < 1 {
@@ -68,15 +83,14 @@ func loadConfig() (Config, error) {
 }
 
 // get tunnel config
-func tunnelConfig(st store.Store) tunnel.Config {
+func getTunnelConfig(st store.Store) tunnel.Config {
 	conf := &tls.Config{
 		InsecureSkipVerify: true,
 	}
 	return tunnel.Config{
-		Conf:     conf,
-		Remote:   config.RemoteAddr,
-		Hostname: config.Hostname,
-		Secret:   config.AuthSecret,
-		Store:    st,
+		Conf:   conf,
+		Remote: config.RemoteAddr,
+		Secret: config.AuthSecret,
+		Store:  st,
 	}
 }

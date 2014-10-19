@@ -3,15 +3,15 @@ package actions
 import (
 	"log"
 
-	"postman/tunnel"
+	"postman/client"
 )
 
 type AuthenticatedMsg struct {
 	Id int `json:"senderId"`
 }
 
-func Authenticated(c *tunnel.Client, args interface{}) {
+func Authenticated(args interface{}) {
 	msg := args.(*AuthenticatedMsg)
 	log.Printf("client: authenticated with id %d", msg.Id)
-	c.SetAuthenticated()
+	client.Postman.Tunnel.SetAuthenticated()
 }
