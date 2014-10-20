@@ -21,6 +21,8 @@
                 window.location.reload();
                 return;
             }
+            $('#txt-currentSPF').val(data.records['spf']);
+            $('#txt-currentDKIM').val(data.records['dkim']);
             if (!data['spf']) {
                 $form.find('.spf').addClass('negative');
             }

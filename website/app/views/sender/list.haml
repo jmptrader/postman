@@ -15,7 +15,7 @@
 .ui.small.modal.create-sender
   .header
     Create Sender
-  = form_for :sender, '/sender/create', class: 'ui form segment' ,id: 'form-createSender' do |f|
+  = form_for :sender, url(:sender, :create), class: 'ui form segment' ,id: 'form-createSender' do |f|
     .field
       .ui.left.labeled.icon.input
         = f.text_field 'ip', placeholder: 'sender ip'

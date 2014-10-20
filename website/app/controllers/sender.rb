@@ -39,11 +39,22 @@ Website::App.controllers :sender do
     json errors: sender.errors.to_a.flatten
   end
 
-  post :destroy, map: '/sender/delete/:id' do
+  post :destroy, map: '/sender/:id/delete' do
     if @sender.destroy
       json code: 200
     else
       json error: "Can not remove sender #{@sender.ip}"
+    end
+  end
+
+  post :update, map: '/sender/:id/update' do
+    sender_params = params['sender'].keep_if do |k, _|
+      %w(immediate deliver_frequency web_hook).include?(k)
+    end
+    if @sender.update sender_params
+      json code: 200
+    else
+      json errors: @sender.errors.to_a.flatten
     end
   end
 
@@ -54,23 +65,7 @@ Website::App.controllers :sender do
     end
   end
 
-  get :setting, map: '/sender/:id/setting' do
-    @title = 'setting'
-    haml :'layouts/dashboard', layout: :application do
-      haml :'sender/setting', layout: false
-    end
-  end
-
-  get :logs, map: '/sender/:id/logs' do
-    @title = 'logs'
-    haml :'layouts/dashboard', layout: :application do
-      haml :'sender/logs', layout: false
-    end
-  end
-
   get :dns_records, map: '/sender/:id/dns-records' do
-    @sender = Sender.get params['id']
-    halt 404, 'no sender found' unless @sender
     return json error: 'dns records has been verified' unless @sender.status == 'unverified'
     json({
              code: 200,
@@ -89,7 +84,50 @@ Website::App.controllers :sender do
       @sender.status = 'offline'
       @sender.save!
     end
+    result[:records] = {
+        spf: get_txt_record(@sender.domain),
+        dkim: get_txt_record("mx._domainkey.#{@sender.domain}")
+    }
     return json(result)
+  end
+
+  get :setting, map: '/sender/:id/setting' do
+    @title = 'setting'
+    haml :'layouts/dashboard', layout: :application do
+      haml :'sender/setting', layout: false
+    end
+  end
+
+  get :frequencies, map: '/sender/:id/frequencies.html' do
+    @frequencies = @sender.frequencies.all order: [:id.desc]
+    render '_frequencies', layout: false
+  end
+
+  post :frequency_create, map: '/sender/:id/frequency/create' do
+    frequency_params = params['frequency'].keep_if do |k, _|
+      %w(domain deliver_frequency).include?(k)
+    end
+    frequency = @sender.frequencies.create frequency_params
+    if frequency.errors.size == 0
+      return json code: 200
+    end
+    json errors: frequency.errors.to_a.flatten
+  end
+
+  post :frequency_delete, map: '/sender/:id/frequency/:frequency_id/delete' do
+    frequency = @sender.frequencies.first id: params['frequency_id']
+    if frequency.destroy
+      json code: 200
+    else
+      json error: "Can not remove role for #{frequency.domain}"
+    end
+  end
+
+  get :logs, map: '/sender/:id/logs' do
+    @title = 'logs'
+    haml :'layouts/dashboard', layout: :application do
+      haml :'sender/logs', layout: false
+    end
   end
 
   get :config_download, map: '/sender/:id/config/download' do

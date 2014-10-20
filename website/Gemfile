@@ -25,3 +25,4 @@ gem 'dm-core'
 # Padrino Stable Gem
 gem 'padrino', '0.12.3'
 gem 'sinatra-contrib'
+gem 'redis'

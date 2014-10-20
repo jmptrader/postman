@@ -1,0 +1,10 @@
+- @frequencies.each do |frequency|
+  %tr
+    %td= frequency.domain
+    %td= frequency.deliver_frequency
+    %td
+      = link_to 'Remove', url(:sender, :frequency_delete, id: @sender.id, frequency_id: frequency.id), class: 'remove'
+- if @sender.frequencies.size == 0
+  %tr
+    %td(colspan="3")
+      No record found

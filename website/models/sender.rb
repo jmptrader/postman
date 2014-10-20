@@ -17,7 +17,6 @@ class Sender
                format: 'domain record is not validated'
            }
   property :status, String, default: 'unverified'
-  property :deliver_frequency, Integer, default: 10
 
   # secret keys
   property :secret, String
@@ -25,9 +24,14 @@ class Sender
   property :api_key, String
   property :private_key, Text
   property :public_key, Text
+
   # settings
-  property :web_hook, String
+  property :web_hook, String, format: URI::regexp
   property :immediate, Boolean, default: false
+  property :deliver_frequency, Integer, default: 10, format: /^([0-9]|[1-5][0-9]|60)$/,
+           messages: {
+               format: 'frequency should not more than 60'
+           }
 
   property :updated_at, DateTime
   property :created_at, DateTime

@@ -6,7 +6,7 @@
     var submitForm = function () {
         $form.form('validate form');
         if ($form.find('.error').length > 0)return false;
-        $.ajax('/sender/create', {
+        $.ajax($form[0].action, {
             type: 'POST',
             data: $form.serialize(),
             dataType: 'json'
