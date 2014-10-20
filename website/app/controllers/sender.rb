@@ -47,21 +47,25 @@ Website::App.controllers :sender do
     end
   end
 
+  get :dashboard, map: '/sender/:id' do
+    @title = 'dashboard'
+    haml :'layouts/dashboard', layout: :application do
+      haml :'sender/getting_started', layout: false
+    end
+  end
+
   post :update, map: '/sender/:id/update' do
     sender_params = params['sender'].keep_if do |k, _|
       %w(immediate deliver_frequency web_hook).include?(k)
     end
     if @sender.update sender_params
+      if sender_params.has_key? 'deliver_frequency'
+        send_cmd @sender.id, command: 'frequency', action: 'default',
+                 value: sender_params['deliver_frequency']
+      end
       json code: 200
     else
       json errors: @sender.errors.to_a.flatten
-    end
-  end
-
-  get :dashboard, map: '/sender/:id' do
-    @title = 'dashboard'
-    haml :'layouts/dashboard', layout: :application do
-      haml :'sender/getting_started', layout: false
     end
   end
 
@@ -109,6 +113,8 @@ Website::App.controllers :sender do
     end
     frequency = @sender.frequencies.create frequency_params
     if frequency.errors.size == 0
+      send_cmd @sender.id, command: 'frequency', action: 'create',
+               domain: frequency.domain, value: frequency.deliver_frequency
       return json code: 200
     end
     json errors: frequency.errors.to_a.flatten
@@ -117,6 +123,8 @@ Website::App.controllers :sender do
   post :frequency_delete, map: '/sender/:id/frequency/:frequency_id/delete' do
     frequency = @sender.frequencies.first id: params['frequency_id']
     if frequency.destroy
+      send_cmd @sender.id, command: 'frequency', action: 'delete',
+               domain: frequency.domain
       json code: 200
     else
       json error: "Can not remove role for #{frequency.domain}"
