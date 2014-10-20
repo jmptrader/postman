@@ -19,7 +19,11 @@ global.Command = {
                 Command.handle(sender_id, cmd);
             }, 1000);
         }
-        this._commandMap[cmd.command].call(senderMap[sender_id], cmd);
+        if (this._commandMap[cmd.command]) {
+            var command = cmd.command;
+            delete(cmd.command);
+            this._commandMap[command].call(senderMap[sender_id], cmd);
+        }
     }
 };
 
