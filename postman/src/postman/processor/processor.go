@@ -115,7 +115,7 @@ func (dp *DomainProcessor) DisAvailable() {
 // create sender gorutine for mail
 func (dp *DomainProcessor) CreateSender(m *mail.Mail) {
 	if !dp.isNew {
-		wait := time.NewTimer(getDeliverFrequency(dp.Domain))
+		wait := time.NewTimer(GetDeliverInterval(dp.Domain))
 		<-wait.C
 	} else {
 		dp.isNew = false
@@ -158,7 +158,7 @@ Loop:
 	// }
 	store.Add(dp.sendingSet, messageId)
 	if !dp.CheckSender() {
-		ticker := time.NewTicker(getDeliverFrequency(dp.Domain) / 3)
+		ticker := time.NewTicker(GetDeliverInterval(dp.Domain) / 3)
 		for _ = range ticker.C {
 			if dp.CheckSender() {
 				ticker.Stop()

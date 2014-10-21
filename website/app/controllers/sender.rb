@@ -60,8 +60,8 @@ Website::App.controllers :sender do
     end
     if @sender.update sender_params
       if sender_params.has_key? 'deliver_frequency'
-        send_cmd @sender.id, command: 'frequency', action: 'default',
-                 value: sender_params['deliver_frequency']
+        send_cmd @sender.id, command: 'frequency', action: 'update',
+                 domain: 'default', value: sender_params['deliver_frequency'].to_s
       end
       json code: 200
     else
@@ -113,8 +113,8 @@ Website::App.controllers :sender do
     end
     frequency = @sender.frequencies.create frequency_params
     if frequency.errors.size == 0
-      send_cmd @sender.id, command: 'frequency', action: 'create',
-               domain: frequency.domain, value: frequency.deliver_frequency
+      send_cmd @sender.id, command: 'frequency', action: 'update',
+               domain: frequency.domain, value: frequency.deliver_frequency.to_s
       return json code: 200
     end
     json errors: frequency.errors.to_a.flatten

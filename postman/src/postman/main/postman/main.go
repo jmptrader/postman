@@ -22,6 +22,10 @@ func main() {
 		return &actions.AuthenticatedMsg{}
 	}, actions.Authenticated)
 
+	tunnel.Register("frequency", func() interface{} {
+		return &actions.FrequencyMsg{}
+	}, actions.Frequency)
+
 	tunnel.Register("sendMail", func() interface{} {
 		return &mail.Mail{}
 	}, actions.SendMail)
