@@ -148,6 +148,7 @@ func (dp *DomainProcessor) CreateSender(m *mail.Mail) {
 		SetMailSent(m)
 		return
 	}
+	log.Print("mail: sent with err")
 	// todo error handler
 }
 

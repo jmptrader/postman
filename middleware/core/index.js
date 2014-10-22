@@ -62,7 +62,7 @@ module.exports = function () {
     c.command = function (action, args) {
         crypto.randomBytes(4, function (ex, buf) {
             var commandStr = ["+" + buf.toString('hex').substr(0, 4), action, JSON.stringify(args)].join('|');
-            c.write(commandStr + LINEFEED);
+            c.write(commandStr.replace(/\f/g, '') + LINEFEED);
         });
     };
 

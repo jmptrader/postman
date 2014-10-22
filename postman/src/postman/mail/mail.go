@@ -11,7 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jpoz/dkim"
+
 	"postman/client"
+	"postman/util"
 )
 
 var postman = client.Postman
@@ -28,7 +31,10 @@ type Mail struct {
 	Sender    string `json:"sender"`
 }
 
-const mailStoragePrefix = "mail:"
+const (
+	MAIL_STORAGE_PREFIX = "mail:"
+	DKIM_SELECTOR       = "mx"
+)
 
 func (m *Mail) Create() (err error) {
 	m.From = fmt.Sprintf("bounce+%s-%s@%s", m.Id, strings.Replace(m.To, "@", "=", -1), postman.Hostname)
@@ -36,13 +42,13 @@ func (m *Mail) Create() (err error) {
 	if err != nil {
 		return
 	}
-	err = postman.Store.Set(mailStoragePrefix+m.Id, string(mailStr))
+	err = postman.Store.Set(MAIL_STORAGE_PREFIX+m.Id, string(mailStr))
 	return
 }
 
 func Get(messageId string) (m *Mail, err error) {
 	m = &Mail{}
-	mailStr, ok := postman.Store.Get(mailStoragePrefix + messageId)
+	mailStr, ok := postman.Store.Get(MAIL_STORAGE_PREFIX + messageId)
 	if !ok {
 		err = errors.New("no mail record found.")
 		return
@@ -58,11 +64,11 @@ func (m *Mail) Addr() string {
 
 func (m *Mail) Update() error {
 	mailStr, _ := json.Marshal(m)
-	return postman.Store.Set(mailStoragePrefix+m.Id, string(mailStr))
+	return postman.Store.Set(MAIL_STORAGE_PREFIX+m.Id, string(mailStr))
 }
 
 func (m *Mail) Destroy() {
-	postman.Store.Destroy(mailStoragePrefix + m.Id)
+	postman.Store.Destroy(MAIL_STORAGE_PREFIX + m.Id)
 }
 
 func (m *Mail) CallWebHook(params map[string]string) (err error) {
@@ -88,6 +94,12 @@ func (m *Mail) CallWebHook(params map[string]string) (err error) {
 }
 
 func (m *Mail) Deliver() error {
-	log.Printf("start sending %s", m.Id)
-	return nil
+	conf, err := dkim.NewConf(postman.Hostname, DKIM_SELECTOR)
+	if err != nil {
+		log.Fatalf("dkim: config %s", err.Error())
+	}
+	d, _ := dkim.New(conf, []byte(postman.PrivateKey))
+	msg, _ := d.Sign([]byte(m.Content))
+	log.Printf("mail: start sending %s", m.Id)
+	return util.SendMail(m.From, m.To, msg, postman.Hostname)
 }

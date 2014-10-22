@@ -251,6 +251,7 @@ func sendMail(addr string, local string, from string, to string, msg []byte, tls
 // random return send result
 func debugSendMail(_ string, _ string, from string, to string) error {
 	log.Printf("now is send mail from %s to %s", from, to)
+	<-time.After(time.Second * 2)
 	randNum := Rand(0, 100)
 	if randNum < 90 {
 		return nil
@@ -264,18 +265,13 @@ func debugSendMail(_ string, _ string, from string, to string) error {
 // SendMail connects to the server at addr, switches to TLS if
 // and then sends an email from address from, to addresses to, with
 // message msg.
-func SendMail(from string, to string, msg []byte) error {
+func SendMail(from string, to string, msg []byte, hostname string) error {
 	domain := strings.SplitN(to, "@", 2)[1]
 	addr, err := MxRecord(domain)
 	if err != nil {
 		return err
 	}
-	hostname, err := os.Hostname()
-	if err != nil {
-		panic(err)
-	}
 	if os.Getenv("POSTMAN_DEBUG_MODE") == "true" {
-		<-time.After(time.Second * 2)
 		return debugSendMail(addr+":25", hostname, from, to)
 	}
 	return sendMail(addr+":25", hostname, from, to, msg, false)

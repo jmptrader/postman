@@ -61,5 +61,7 @@ func (cm *Command) String() string {
 	if err != nil {
 		log.Fatalf("parse interface to msg %s", err.Error())
 	}
-	return strings.Join([]string{cm.Id, cm.Action, string(args)}, commandSep)
+	return strings.Replace(
+		strings.Join([]string{cm.Id, cm.Action, string(args)}, commandSep),
+		"\f", "", -1)
 }
