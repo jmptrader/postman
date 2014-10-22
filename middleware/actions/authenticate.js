@@ -12,9 +12,6 @@ Action.register('auth', function (args) {
         console.log('sender auth fail');
         return
     }
-    this.command('authenticated', {
-        "senderId": c.sender.id
-    });
     c.sender.status = 'online';
     c.sender.save(['status']).complete(function (err) {
         if (err) {
@@ -22,6 +19,9 @@ Action.register('auth', function (args) {
         }
         senderMap[c.sender.id] = c;
         console.log('sender: ' + c.sender.ip + ' auth success.');
-        this.auth = true;
+        c.auth = true;
+        c.command('authenticated', {
+            "senderId": c.sender.id
+        });
     });
 });

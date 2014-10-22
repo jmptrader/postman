@@ -15,6 +15,7 @@ import (
 const (
 	DEFAULT_DB_DIR     = "./data"
 	DEFAULT_CONFIG_DIR = "./config"
+	CLIENT_PRIVATE_KEY = "sys:private"
 )
 
 type Config struct {
@@ -26,9 +27,10 @@ type Config struct {
 }
 
 type Client struct {
-	Tunnel   tunnel.Tunnel
-	Store    store.Store
-	Hostname string
+	Tunnel     tunnel.Tunnel
+	Store      store.Store
+	Hostname   string
+	PrivateKey string
 }
 
 var Postman *Client
@@ -43,6 +45,22 @@ func init() {
 		Tunnel:   tunnel.New(getTunnelConfig(st)),
 		Hostname: config.Hostname,
 	}
+	go Postman.setPrivateKey()
+}
+
+// todo: here be block for some reason
+func (p *Client) setPrivateKey() {
+	pk, ok := p.Store.Get(CLIENT_PRIVATE_KEY)
+	if ok {
+		p.PrivateKey = pk
+		return
+	}
+	pk, err := p.Tunnel.RequestBlock("privateKey", map[string]string{})
+	if err != nil {
+		log.Fatalf("client: get private key %s", err.Error())
+	}
+	p.Store.Set(CLIENT_PRIVATE_KEY, pk)
+	p.PrivateKey = pk
 }
 
 func configInit() {

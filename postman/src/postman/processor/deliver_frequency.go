@@ -2,6 +2,7 @@ package processor
 
 import (
 	"strconv"
+	"sync"
 	"time"
 
 	"postman/client"
@@ -11,6 +12,8 @@ const (
 	FREQUENCY_PREFIX  = "domainFrequency:"
 	MAX_SEND_INTERVAL = 300
 )
+
+var readFrequencyLock = sync.Mutex{}
 
 // get deliver interval for a certain domain
 func GetDeliverInterval(domain string) time.Duration {
@@ -22,6 +25,8 @@ func GetDeliverInterval(domain string) time.Duration {
 }
 
 func GetDeliverFrequency(domain string) (int, error) {
+	readFrequencyLock.Lock()
+	defer readFrequencyLock.Unlock()
 	var frequency string
 	frequency, ok := store.Get(FREQUENCY_PREFIX + domain)
 	if !ok {

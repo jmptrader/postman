@@ -125,15 +125,6 @@ func (dp *DomainProcessor) CreateSender(m *mail.Mail) {
 	}
 }
 
-// Make a certain mail wait 30s and resend.
-func (dp *DomainProcessor) delayDeliver(messageId string) {
-	store.Add(dp.sendingSet, messageId)
-	wait := time.NewTimer(time.Second * 30)
-	<-wait.C
-	store.LPush(dp.queueList, []string{messageId})
-	store.Rem(dp.sendingSet, messageId)
-}
-
 // Listening to pre sending queue.
 func (dp *DomainProcessor) StartGuard() {
 Loop:
@@ -151,11 +142,6 @@ Loop:
 	if err != nil {
 		log.Fatalf("Get mail %s with error: %s", messageId, err.Error())
 	}
-	// If current mail.Domain frequency reach limit && queue left more than three, delay resend.
-	// if frequencyMonitor.IsLock(mail) && store.Size(dp.queueList) > 0 {
-	// 	go dp.delayDeliver(messageId)
-	// 	goto Loop
-	// }
 	store.Add(dp.sendingSet, messageId)
 	if !dp.CheckSender() {
 		ticker := time.NewTicker(GetDeliverInterval(dp.Domain) / 3)
@@ -167,8 +153,7 @@ Loop:
 		}
 	}
 Send:
-	// frequencyMonitor.Record(mail)
 	log.Printf("Mail: %s for %s find sender.", messageId, mail.To)
-	dp.CreateSender(mail)
+	go dp.CreateSender(mail)
 	goto Loop
 }
