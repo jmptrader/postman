@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"postman/mail"
+	"postman/processor"
 )
 
 func SendMail(args interface{}) {
@@ -14,5 +15,13 @@ func SendMail(args interface{}) {
 		log.Printf("mail: create mail %s", err.Error())
 		return
 	}
+	go func() {
+		if m.Immediate {
+			m.Deliver()
+			processor.SetMailSent(m)
+			return
+		}
+		processor.ArrangeMail(m)
+	}()
 	return
 }

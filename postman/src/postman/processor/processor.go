@@ -27,7 +27,6 @@ type DomainProcessor struct {
 	queueList  string
 	sendingSet string
 	available  bool
-	isNew      bool
 	queryLock  *sync.Mutex
 }
 
@@ -49,12 +48,47 @@ func init() {
 	log.Print("Main processor init success")
 }
 
+// set mail to pre sending queue
+func ArrangeMail(m *mail.Mail) {
+	addr := m.Addr()
+	size, err := store.RPush(queuePrefix+addr, []string{m.Id})
+	if err != nil {
+		log.Fatalf("processor: arrange mail", err.Error())
+	}
+	if size == 1 {
+		go CreateProcessor(addr)
+	}
+	return
+}
+
+func HandleMail(m *mail.Mail) {
+	addr := m.Addr()
+	size, err := store.RPush(queuePrefix+addr, []string{m.Id})
+	if err != nil {
+		log.Fatalf("processor: arrange mail", err.Error())
+	}
+	if size == 1 {
+		go CreateProcessor(addr)
+	}
+	return
+}
+
+func SetMailSent(m *mail.Mail) {
+	m.Destroy()
+	addr := m.Addr()
+	domainProcessor, err := GetProcessor(addr)
+	if err != nil {
+		return
+	}
+	store.Rem(domainProcessor.sendingSet, m.Id)
+}
+
 func CreateProcessor(domain string) {
 	dp, err := NewProcessor(domain)
 	if err != nil {
 		return
 	}
-	log.Printf("Processor for domain:%s create success.", domain)
+	log.Printf("processor for domain:%s create success.", domain)
 	dp.StartGuard()
 }
 
@@ -62,7 +96,7 @@ func CreateProcessor(domain string) {
 func GetProcessor(domain string) (dp *DomainProcessor, err error) {
 	dp, exist := processContainer[domain]
 	if !exist {
-		err = errors.New("No process found.")
+		err = errors.New("no process found.")
 		return
 	}
 	return
@@ -75,7 +109,7 @@ func NewProcessor(domain string) (dp *DomainProcessor, err error) {
 	defer processorLock.Unlock()
 	_, exist := processContainer[domain]
 	if exist {
-		err = errors.New("Process has exist.")
+		err = errors.New("process has exist.")
 		return
 	}
 	if err != nil {
@@ -86,7 +120,6 @@ func NewProcessor(domain string) (dp *DomainProcessor, err error) {
 		queueList:  queuePrefix + domain,
 		sendingSet: sendingPrefix + domain,
 		available:  true,
-		isNew:      true,
 		queryLock:  &sync.Mutex{},
 	}
 	processContainer[domain] = dp
@@ -100,7 +133,7 @@ func (dp *DomainProcessor) CheckSender() bool {
 	if !dp.available {
 		return false
 	}
-	dp.DisAvailable()
+	dp.available = false
 	return true
 }
 
@@ -108,21 +141,14 @@ func (dp *DomainProcessor) SetAvailable() {
 	dp.available = true
 }
 
-func (dp *DomainProcessor) DisAvailable() {
-	dp.available = false
-}
-
 // create sender gorutine for mail
 func (dp *DomainProcessor) CreateSender(m *mail.Mail) {
-	if !dp.isNew {
-		wait := time.NewTimer(GetDeliverInterval(dp.Domain))
-		<-wait.C
-	} else {
-		dp.isNew = false
-	}
 	if m.Deliver() == nil {
 		dp.SetAvailable()
+		SetMailSent(m)
+		return
 	}
+	// todo error handler
 }
 
 // Listening to pre sending queue.
@@ -132,7 +158,7 @@ Loop:
 	if err != nil {
 		// close progress when no sending mails
 		if store.Size(dp.sendingSet) < 1 {
-			log.Printf("Domain sender closed: %s", dp.Domain)
+			log.Printf("domain sender closed: %s", dp.Domain)
 			delete(processContainer, dp.Domain)
 			return
 		}
@@ -140,7 +166,7 @@ Loop:
 	}
 	mail, err := mail.Get(messageId)
 	if err != nil {
-		log.Fatalf("Get mail %s with error: %s", messageId, err.Error())
+		log.Fatalf("get mail %s with error: %s", messageId, err.Error())
 	}
 	store.Add(dp.sendingSet, messageId)
 	if !dp.CheckSender() {
@@ -153,7 +179,9 @@ Loop:
 		}
 	}
 Send:
-	log.Printf("Mail: %s for %s find sender.", messageId, mail.To)
+	log.Printf("mail: %s for %s find sender.", messageId, mail.To)
 	go dp.CreateSender(mail)
+	wait := time.NewTimer(GetDeliverInterval(dp.Domain))
+	<-wait.C
 	goto Loop
 }

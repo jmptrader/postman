@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -40,6 +41,7 @@ func (m *Mail) Create() (err error) {
 }
 
 func Get(messageId string) (m *Mail, err error) {
+	m = &Mail{}
 	mailStr, ok := postman.Store.Get(mailStoragePrefix + messageId)
 	if !ok {
 		err = errors.New("no mail record found.")
@@ -49,7 +51,7 @@ func Get(messageId string) (m *Mail, err error) {
 	return
 }
 
-func (m *Mail) addr() string {
+func (m *Mail) Addr() string {
 	addr := strings.SplitN(m.To, "@", 2)[1]
 	return strings.ToLower(addr)
 }
@@ -57,6 +59,10 @@ func (m *Mail) addr() string {
 func (m *Mail) Update() error {
 	mailStr, _ := json.Marshal(m)
 	return postman.Store.Set(mailStoragePrefix+m.Id, string(mailStr))
+}
+
+func (m *Mail) Destroy() {
+	postman.Store.Destroy(mailStoragePrefix + m.Id)
 }
 
 func (m *Mail) CallWebHook(params map[string]string) (err error) {
@@ -82,5 +88,6 @@ func (m *Mail) CallWebHook(params map[string]string) (err error) {
 }
 
 func (m *Mail) Deliver() error {
+	log.Printf("start sending %s", m.Id)
 	return nil
 }
