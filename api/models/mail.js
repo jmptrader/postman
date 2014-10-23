@@ -16,7 +16,7 @@ global.Mail = model.define('Mail', {
     createdAt: 'created_at'
 });
 
-var Log = model.define('Log', {
+global.Log = model.define('Log', {
     status: Model.STRING,
     log: Model.STRING
 }, {

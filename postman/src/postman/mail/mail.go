@@ -101,5 +101,14 @@ func (m *Mail) Deliver() error {
 	d, _ := dkim.New(conf, []byte(postman.PrivateKey))
 	msg, _ := d.Sign([]byte(m.Content))
 	log.Printf("mail: start sending %s", m.Id)
-	return util.SendMail(m.From, m.To, msg, postman.Hostname)
+	err = util.SendMail(m.From, m.To, msg, postman.Hostname)
+	result := map[string]interface{}{
+		"id":      m.Id,
+		"success": err == nil,
+	}
+	if err != nil {
+		result["log"] = err.Error()
+	}
+	postman.Tunnel.Request("log", result)
+	return err
 }
