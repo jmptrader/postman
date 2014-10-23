@@ -144,6 +144,9 @@ func (dp *DomainProcessor) SetAvailable() {
 // create sender gorutine for mail
 func (dp *DomainProcessor) CreateSender(m *mail.Mail) {
 	if m.Deliver() == nil {
+		m.CallWebHook(map[string]string{
+			"event": "delivered",
+		})
 		dp.SetAvailable()
 		SetMailSent(m)
 		return

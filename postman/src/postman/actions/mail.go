@@ -15,13 +15,22 @@ func SendMail(args interface{}) {
 		log.Printf("mail: create mail %s", err.Error())
 		return
 	}
-	go func() {
-		if m.Immediate {
-			m.Deliver()
-			processor.SetMailSent(m)
+	if m.Immediate {
+		err = m.Deliver()
+		m.Destroy()
+		// call webHook once if mail is sent immediately
+		if err != nil {
+			m.CallWebHook(map[string]string{
+				"event": "dropped",
+				"error": err.Error(),
+			})
 			return
 		}
-		processor.ArrangeMail(m)
-	}()
+		m.CallWebHook(map[string]string{
+			"event": "delivered",
+		})
+		return
+	}
+	processor.ArrangeMail(m)
 	return
 }

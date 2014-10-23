@@ -135,7 +135,7 @@ func (c *Proto) handle(reply string) {
 		}
 		return
 	}
-	command.Handler(command.Args)
+	go command.Handler(command.Args)
 }
 
 // read buffer from server
