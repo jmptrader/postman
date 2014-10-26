@@ -20,6 +20,7 @@ var (
 	processorLock    = &sync.Mutex{}
 	processContainer = make(map[string]*DomainProcessor)
 	store            = client.Postman.Store
+	tunnel           = client.Postman.Tunnel
 )
 
 type DomainProcessor struct {
@@ -138,12 +139,15 @@ func (dp *DomainProcessor) CheckSender() bool {
 }
 
 func (dp *DomainProcessor) SetAvailable() {
+	dp.queryLock.Lock()
+	defer dp.queryLock.Unlock()
 	dp.available = true
 }
 
 // create sender gorutine for mail
 func (dp *DomainProcessor) CreateSender(m *mail.Mail) {
-	if m.Deliver() == nil {
+	err := m.Deliver()
+	if err == nil {
 		m.CallWebHook(map[string]string{
 			"event": "delivered",
 		})
@@ -151,8 +155,7 @@ func (dp *DomainProcessor) CreateSender(m *mail.Mail) {
 		SetMailSent(m)
 		return
 	}
-	log.Print("mail: sent with err")
-	// todo error handler
+	errorHandle(dp, m, err.Error())
 }
 
 // Listening to pre sending queue.

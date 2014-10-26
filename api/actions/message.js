@@ -61,9 +61,9 @@ router.all('/message', function (req, res) {
     if (!_.isEmail(from) || !_.isEmail(to)) {
         return res.jsonp({code: 406, error: 'Request content not acceptable.'});
     }
-    var immediate = mail.immediate === undefined && req.sender.immediate || mail.immediate;
+    var immediate = mail.immediate !== undefined ? mail.immediate : req.sender.immediate;
     // sync is valid only when mail is required to be immediate.
-    var sync = mail.sync || req.param('sync') && immediate;
+    var sync = immediate && (mail.sync || req.param('sync'));
     buildMailBuf(req, mail, message, function (err, mailBuf) {
         if (err !== null) {
             return res.jsonp({code: 500, error: 'Unknown error.'});

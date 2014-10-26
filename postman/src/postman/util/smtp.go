@@ -253,10 +253,10 @@ func debugSendMail(_ string, _ string, from string, to string) error {
 	log.Printf("now is send mail from %s to %s", from, to)
 	<-time.After(time.Second * 2)
 	randNum := Rand(0, 100)
-	if randNum < 90 {
+	if randNum < 20 {
 		return nil
 	}
-	if randNum < 95 {
+	if randNum < 50 {
 		return errors.New("no such user find")
 	}
 	return errors.New("ip block")

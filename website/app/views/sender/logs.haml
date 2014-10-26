@@ -35,21 +35,23 @@
         </div>
       {% } %}
     </div>
-    <div class="ui borderless pagination menu">
-      <a href="#{{ current_page -1 }}" class="item {{ current_page < 2 ? 'disabled' : '' }}">
-        <i class="left arrow icon"></i> Previous
-      </a>
-      <a class="item {{ current_page === 1 ? 'active' : '' }}" href="#1">1</a>
-      {% var from = Math.max(2, Math.min(current_page - 2, total - 6)); for (var i = from; i < from + 6 && i < total; i ++){ %}
-        <a class="item {{ current_page === i? 'active' : '' }}"" href="#{{ i }}">{{ i }}</a>
-      {% } %}
-      {% if (total > 1) { %}
-        <a class="item {{ current_page === total? 'active' : '' }}" href="#{{ total }}">{{ total }}</a>
-      {% } %}
-      <a href="#{{ current_page + 1 }}" class="item {{ current_page >= total ? 'disabled' : '' }}">
-        Next <i class="icon right arrow"></i>
-      </a>
-    </div>
+    {% if (total > 1) { %}
+      <div class="ui borderless pagination menu">
+        <a href="#{{ current_page -1 }}" class="item {{ current_page < 2 ? 'disabled' : '' }}">
+          <i class="left arrow icon"></i> Previous
+        </a>
+        <a class="item {{ current_page === 1 ? 'active' : '' }}" href="#1">1</a>
+        {% var from = Math.max(2, Math.min(current_page - 2, total - 6)); for (var i = from; i < from + 6 && i < total; i ++){ %}
+          <a class="item {{ current_page === i? 'active' : '' }}"" href="#{{ i }}">{{ i }}</a>
+        {% } %}
+        {% if (total > 1) { %}
+          <a class="item {{ current_page === total? 'active' : '' }}" href="#{{ total }}">{{ total }}</a>
+        {% } %}
+        <a href="#{{ current_page + 1 }}" class="item {{ current_page >= total ? 'disabled' : '' }}">
+          Next <i class="icon right arrow"></i>
+        </a>
+      </div>
+    {% } %}
   </script>
 
 

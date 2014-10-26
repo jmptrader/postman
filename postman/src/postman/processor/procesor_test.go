@@ -10,7 +10,7 @@ func TestCreateProcessor(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Create processor with error %s", err.Error())
 	}
-	dp.DisAvailable()
+	dp.available = false
 	log.Print(dp)
 	_, err = NewProcessor("a.com")
 	if err == nil {
@@ -34,7 +34,7 @@ func TestAvailable(t *testing.T) {
 	if !dp3.CheckSender() {
 		t.Fatalf("Get sender with error")
 	}
-	dp3.DisAvailable()
+	dp3.available = false
 	if dp3.CheckSender() {
 		t.Log(dp3)
 		t.Fatalf("Pointer err!")

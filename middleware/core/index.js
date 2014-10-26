@@ -32,13 +32,10 @@ var init = function () {
     var c = this;
     Sender.find({
         where: {
-            ip: c.remoteAddress,
-            status: {
-                ne: 'unverified'
-            }
+            ip: c.remoteAddress
         }
     }).complete(function (err, sender) {
-        if (err || !sender) {
+        if (err || !sender || sender.status === 'unverified') {
             return c.command('exit', {
                 "msg": 'sender not found'
             });
@@ -85,8 +82,8 @@ module.exports = function () {
     });
     // trigger when sender close
     c.addListener('close', function () {
-        delete senderMap[c.sender.id];
         if (c.sender) {
+            delete senderMap[c.sender.id];
             c.sender.status = 'offline';
             c.sender.save(['status']).complete(function () {
                 sys.puts('TLS connection ' + c.sender.ip + ' closed');

@@ -108,6 +108,8 @@ func (m *Mail) Deliver() error {
 	}
 	if err != nil {
 		result["log"] = err.Error()
+		m.Log = err.Error()
+		m.Update()
 	}
 	postman.Tunnel.Request("log", result)
 	return err
