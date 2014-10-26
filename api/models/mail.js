@@ -13,7 +13,27 @@ global.Mail = model.define('Mail', {
 }, {
     tableName: 'mails',
     updatedAt: 'updated_at',
-    createdAt: 'created_at'
+    createdAt: 'created_at',
+    instanceMethods: {
+        write: function (content, cb) {
+            var self = this;
+            var filePath = path.join(archiveDir, moment(new Date(self.created_at)).format("YYYYMMDD"));
+            ensureExists(filePath, 0744, function (err) {
+                if (err !== null) throw err;
+                fs.writeFile(path.join(filePath, self.id + MAIL_FILE_EXT), content, function (err) {
+                    if (err) throw err;
+                    cb && cb();
+                });
+            });
+        }, read: function (cb) {
+            var self = this;
+            var filePath = path.join(archiveDir, moment(new Date(self.created_at)).format("YYYYMMDD"), self.id + MAIL_FILE_EXT);
+            fs.readFile(filePath, function (err, data) {
+                if (err) return cb(null);
+                cb(data.toString());
+            });
+        }
+    }
 });
 
 global.Log = model.define('Log', {
@@ -36,26 +56,6 @@ var ensureExists = function (path, mask, cb) {
             if (err.code == 'EEXIST') cb(null);
             else cb(err);
         } else cb(null);
-    });
-};
-
-Mail.write = function (mailId, content, cb) {
-    var filePath = path.join(archiveDir, moment().format("YYYYMMDD"));
-    ensureExists(filePath, 0744, function (err) {
-        if (err !== null) throw err;
-        fs.writeFile(path.join(filePath, mailId + MAIL_FILE_EXT), content, function (err) {
-            if (err) throw err;
-            cb && cb();
-        });
-    });
-};
-
-Mail.read = function (mailId, cb) {
-    // todo: here is a bug => if mail sent just before 24:00, bug will appear
-    var filePath = path.join(archiveDir, moment().format("YYYYMMDD"), mailId + MAIL_FILE_EXT);
-    fs.readFile(filePath, function (err, data) {
-        if (err) return cb(null);
-        cb(data.toString());
     });
 };
 

@@ -1,9 +1,9 @@
 Command.register('sendMail', function (cmd) {
     var c = this;
-    Mail.read(cmd.mailId, function (data) {
-        Mail.find({
-            where: {id: cmd.mailId}
-        }).complete(function (err, mail) {
+    Mail.find({
+        where: {id: cmd.mailId}
+    }).complete(function (err, mail) {
+        mail.read(function (data) {
             if (err) return;
             c.command('sendMail', {
                 id: String(mail.id),
