@@ -1,45 +1,23 @@
-var keepIf = function (objs, attrs) {
-    var newObjs = [];
-    objs.forEach(function (obj) {
-        var newObj = {};
-        attrs.forEach(function (attr) {
-            newObj[attr] = obj[attr];
-        });
-        newObjs.push(newObj);
-    });
-    return newObjs;
-};
-
 router.all('/logs', function (req, res) {
-    var limit = req.param('limit') || req.body.limit || req.$params.limit;
-    var offset = req.param('offset') || req.body.offset || req.$params.offset;
-    var result = [];
-    req.sender.getMails({
-        order: [
-            ["created_at", "DESC"]
-        ],
-        limit: limit,
-        offset: offset
-    }).success(function (mails) {
-        var len = mails.length;
-        mails.forEach(function (mail) {
-            mail.getLogs({order: [
-                ["created_at", "DESC"]
-            ]}).complete(function (_, logs) {
-                result.push({
-                    logs: keepIf(logs, ['created_at', 'status', 'log']),
-                    created_at: mail.created_at,
-                    from: mail.from,
-                    to: mail.to,
-                    subject: mail.subject
-                });
-                len -= 1;
-                if (len <= 0) {
-                    res.jsonp(result.sort(function (a, b) {
-                        return (new Date(a)).getTime() - (new Date(b)).getTime();
-                    }));
-                }
-            })
-        });
+    var limit = req.param('limit') || req.body.limit || req.$params.limit || 0;
+    var offset = req.param('offset') || req.body.offset || req.$params.offset || 0;
+    model.query('SELECT COUNT(id) FROM jianxin.mails WHERE 1=1;').complete(function (err, result) {
+        var length = err ? 0 : result[0]['COUNT(id)'];
+        if (!length) {
+            return res.jsonp({code: 200, total: length, logs: []});
+        }
+        model.query('SELECT mails.from, mails.to, mails.subject, mails.id, mails.created_at, logs.log, logs.status, logs.created_at AS log_created_at\
+        FROM jianxin.mails\
+        LEFT JOIN jianxin.logs\
+        ON logs.mail_id= mails.id\
+        WHERE mails.id in (\
+            SELECT * FROM (\
+                SELECT mails.id FROM jianxin.mails WHERE mails.sender_id = :senderId ORDER BY mails.id DESC LIMIT :offset, :limit\
+            ) AS t\
+        )\
+        ORDER BY mails.id DESC', null,
+            { raw: true }, { offset: offset, limit: limit, senderId: req.sender.id }).complete(function (_, logs) {
+                return res.jsonp({code: 200, total: length, logs: logs});
+            });
     });
 });

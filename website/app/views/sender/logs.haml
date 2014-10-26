@@ -1,1 +1,57 @@
-Here is logs.
+=content_tag 'div', '', id: 'mailLogsList'
+
+:erb
+  <script type="text/javascript" charset="utf-8">
+    window.api_key = '<%= @sender.api_key %>'
+    window.api_url = '<%= "#{@api_addr}/#{@sender.domain}/logs" %>'
+  </script>
+
+  <script type="text/template" id="mailLogItem">
+    <div class="ui selection list">
+      {% for (var i = max; i >= min; i--) { if (!logs[i]) continue; %}
+        <div class="item" {% if (logs[i].logs.length > 0){ var logArr =  logs[i].logs;%}data-html="
+        <div class='ui inverted relaxed divided list'>
+          {% for(var j = 0; logArr[j]; j++){ var logInfo = logArr[j] %}
+            <div class='item'>
+              <i class='{{ logInfo.status === 'delivered' ? 'checkmark green' : 'red ban circle' }} icon'></i>
+              <div class='content'>
+                <div class='header'>{{ logInfo.status }}</div>
+                <span style='font-size: 0.8em'>@ {{ logInfo.created_at }}
+                {{ logInfo.status === 'delivered' ? '' : ' <br>error: ' + logInfo.log}}</span>
+              </div>
+            </div>
+          {% } %}
+        </div>
+        " data-variation="inverted"{% } %}>
+          <img class="ui avatar image" src="{{ getAvatar(logs[i].to) }}">
+          <div class="content">
+            <div class="header">
+              [{{ logs[i].logs.length === 0 ? 'in queue' : logs[i].status }}] {{ logs[i].subject }}
+            </div>
+            <span style="font-size: 0.8em">
+              send to: {{ logs[i].to }} / from: {{ logs[i].from }} / at {{ logs[i].created_at }}
+            </span>
+          </div>
+        </div>
+      {% } %}
+    </div>
+    <div class="ui borderless pagination menu">
+      <a href="#{{ current_page -1 }}" class="item {{ current_page < 2 ? 'disabled' : '' }}">
+        <i class="left arrow icon"></i> Previous
+      </a>
+      <a class="item {{ current_page === 1 ? 'active' : '' }}" href="#1">1</a>
+      {% var from = Math.max(2, Math.min(current_page - 2, total - 6)); for (var i = from; i < from + 6 && i < total; i ++){ %}
+        <a class="item {{ current_page === i? 'active' : '' }}"" href="#{{ i }}">{{ i }}</a>
+      {% } %}
+      {% if (total > 1) { %}
+        <a class="item {{ current_page === total? 'active' : '' }}" href="#{{ total }}">{{ total }}</a>
+      {% } %}
+      <a href="#{{ current_page + 1 }}" class="item {{ current_page >= total ? 'disabled' : '' }}">
+        Next <i class="icon right arrow"></i>
+      </a>
+    </div>
+  </script>
+
+
+- content_for :javascript do
+  = javascript_include_tag '/vendor/underscore.min.js', '/vendor/md5.min.js', 'sender/logs'

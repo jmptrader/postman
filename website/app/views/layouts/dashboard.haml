@@ -1,3 +1,8 @@
+- content_for :stylesheet do
+  = stylesheet_link_tag '/vendor/highlight/github.css'
+- content_for :javascript do
+  = javascript_include_tag '/vendor/highlight/highlight.pack.js'
+
 .row
   .four.wide.column
     .ui.left.aligned.inverted.segment{class: ( @sender.status == 'online' ? 'blue' : 'red')}
@@ -37,8 +42,3 @@
         = 'Logs'
 
     = yield
-
-- content_for :stylesheet do
-  = stylesheet_link_tag '/vendor/highlight/github.css'
-- content_for :javascript do
-  = javascript_include_tag '/vendor/highlight/highlight.pack.js'

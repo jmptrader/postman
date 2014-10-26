@@ -4,6 +4,10 @@ body {
     font-family: sans-serif;
 }
 
+.ui.popup {
+    max-width: 800px !important;
+}
+
 /* red heart divider in top */
 .divider {
     margin: 0.2rem 0 0 !important;

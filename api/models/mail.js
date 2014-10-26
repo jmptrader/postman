@@ -51,6 +51,7 @@ Mail.write = function (mailId, content, cb) {
 };
 
 Mail.read = function (mailId, cb) {
+    // todo: here is a bug => if mail sent just before 24:00, bug will appear
     var filePath = path.join(archiveDir, moment().format("YYYYMMDD"), mailId + MAIL_FILE_EXT);
     fs.readFile(filePath, function (err, data) {
         if (err) return cb(null);

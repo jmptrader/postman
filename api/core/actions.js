@@ -32,8 +32,8 @@ router.use(function (req, res, next) {
             return res.jsonp({code: 404, error: 'sender not found.'});
         }
         var md5sum = crypto.createHash('md5');
-        md5sum.update(req.param('params') + sender.api_key);
-        if (req.params['secret'] !== md5sum.digest('hex')) {
+        md5sum.update(req.param('params').toLowerCase() + sender.api_key);
+        if (req.param('secret') !== md5sum.digest('hex')) {
             return res.jsonp({code: 401, error: 'sender unauthorized.'});
         }
         req.$params = params;
