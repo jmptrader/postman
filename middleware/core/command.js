@@ -1,12 +1,4 @@
-var redis = require('redis');
 var path = require('path');
-var redisConfig = require('../../config/database').redis;
-
-var redisClient = redis.createClient(
-    redisConfig.port,
-    redisConfig.host,
-    redisConfig.options
-);
 
 global.Command = {
     _commandMap: {},
@@ -33,7 +25,7 @@ require("fs").readdirSync(path.join(__dirname, '../commands')).forEach(function 
 });
 
 var commandLoop = function () {
-    redisClient.BRPOP('jianxin:command', 0, function (err, cmdArr) {
+    redisBlockClient.BRPOP('jianxin:command', 0, function (err, cmdArr) {
         if (err) return commandLoop();
         var sender_id = cmdArr[1].split(':')[0];
         var cmd = JSON.parse(cmdArr[1].substr(sender_id.length + 1));

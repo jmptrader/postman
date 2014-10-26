@@ -61,6 +61,9 @@ router.all('/message', function (req, res) {
     if (!_.isEmail(from) || !_.isEmail(to)) {
         return res.jsonp({code: 406, error: 'Request content not acceptable.'});
     }
+    var immediate = mail.immediate === undefined && req.sender.immediate || mail.immediate;
+    // sync is valid only when mail is required to be immediate.
+    var sync = mail.sync || req.param('sync') && immediate;
     buildMailBuf(req, mail, message, function (err, mailBuf) {
         if (err !== null) {
             return res.jsonp({code: 500, error: 'Unknown error.'});
@@ -84,11 +87,17 @@ router.all('/message', function (req, res) {
                         if (err) {
                             return res.jsonp({code: 500, error: 'Unknown error.'});
                         }
-                        res.jsonp({
-                            code: 200,
-                            msg: 'in queue',
-                            id: mailRecord.id
-                        })
+                        if (!sync) {
+                            return res.jsonp({
+                                code: 200,
+                                msg: 'in queue',
+                                id: mailRecord.id
+                            })
+                        }
+                        MailSync.listen(mailRecord.id, function (result) {
+                            result.code = 200;
+                            res.jsonp(result);
+                        });
                     });
                 });
             });

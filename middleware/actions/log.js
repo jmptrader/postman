@@ -4,11 +4,13 @@ Action.register('log', function (args) {
     if (!c.auth) return;
     Mail.find({where: {id: mailId}}).complete(function (err, m) {
         if (err) return;
-        Log.create({
+        var result = {
             log: args.log,
             status: args.success ? 'delivered' : 'dropped'
-        }).complete(function (err, l) {
+        };
+        Log.create(result).complete(function (err, l) {
             if (err) return;
+            MailSync.emit(mailId, result);
             m.addLog(l);
         });
     });

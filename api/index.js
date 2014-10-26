@@ -8,6 +8,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 require('./core/models');
 require('./core/command');
+require('./core/mail-sync');
+
+MailSync.loop();
 
 app.use('/:domain',
     require('./core/actions')
