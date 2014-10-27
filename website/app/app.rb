@@ -5,6 +5,10 @@ module Website
 
     enable :sessions
 
+    before do
+      @unknown_exception_count = SendException.all(is_new: true).count
+    end
+
     ##
     # Caching support.
     #

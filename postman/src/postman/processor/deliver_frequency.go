@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"log"
 	"strconv"
 	"sync"
 	"time"
@@ -33,11 +34,12 @@ func GetDeliverFrequency(domain string) (int, error) {
 		frequency, ok = store.Get(FREQUENCY_PREFIX + "default")
 	}
 	if !ok {
-		frequency, err := client.Postman.Tunnel.RequestBlock("frequency", map[string]string{"domain": "default"})
+		reply, err := client.Postman.Tunnel.RequestBlock("frequency", map[string]string{"domain": "default"})
 		if err != nil {
-			return 0, err
+			log.Fatalf("default frequency %s", err.Error())
 		}
-		SaveDeliverFrequency(domain, frequency)
+		SaveDeliverFrequency(domain, reply)
+		frequency = reply
 	}
 	return strconv.Atoi(frequency)
 }

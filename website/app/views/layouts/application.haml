@@ -16,11 +16,11 @@
           = link_to url(:sender, :index), class: 'item pp', id: 'js:nav-sender', :'data-content' => 'Create Modify Delete sender.' do
             = content_tag 'i', '', class: 'rocket icon'
             = 'Senders Manage'
-          %a.item.pp#js:nav-exception(data-content="Decide the handle on a certain log.")
-            %i.bug.icon
-            Unknown Exception
-            %span.ui.red.label.small
-              214
+          = link_to url(:exception, :index), class: 'item pp', id: 'js:nav-exception', :'data-content' => 'Decide the handle on a error log.' do
+            = content_tag 'i', '', class: 'bug icon'
+            = 'Exceptions'
+            - if @unknown_exception_count > 0
+              = content_tag 'span', @unknown_exception_count, class: 'ui red label small'
 
       = yield
 

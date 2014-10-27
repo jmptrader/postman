@@ -100,7 +100,7 @@ func (m *Mail) Deliver() error {
 	}
 	d, _ := dkim.New(conf, []byte(postman.PrivateKey))
 	msg, _ := d.Sign([]byte(m.Content))
-	log.Printf("mail: start sending %s", m.Id)
+	log.Printf("mail: %s start sending", m.Id)
 	err = util.SendMail(m.From, m.To, msg, postman.Hostname)
 	result := map[string]interface{}{
 		"id":      m.Id,

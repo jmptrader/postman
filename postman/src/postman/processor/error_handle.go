@@ -5,10 +5,7 @@ import (
 	"time"
 
 	"postman/mail"
-	"postman/util"
 )
-
-const EXCEPTION_TREATMENT_PREFIX = "ext:"
 
 var retryInterval [3]time.Duration = [3]time.Duration{
 	time.Minute * 5,
@@ -16,18 +13,8 @@ var retryInterval [3]time.Duration = [3]time.Duration{
 	time.Minute * 25,
 }
 
-func getExceptionTreatment(l string) (t string, err error) {
-	id := util.MD5(l)
-	t, ok := store.Get(EXCEPTION_TREATMENT_PREFIX + id)
-	if ok {
-		return
-	}
-	t, err = tunnel.RequestBlock("exception", map[string]string{"log": l})
-	if err != nil {
-		return
-	}
-	err = store.Set(EXCEPTION_TREATMENT_PREFIX+id, t)
-	return
+func getExceptionTreatment(l string) (string, error) {
+	return tunnel.RequestBlock("exception", map[string]string{"log": l})
 }
 
 func errorHandle(dp *DomainProcessor, m *mail.Mail, l string) {
@@ -37,6 +24,15 @@ func errorHandle(dp *DomainProcessor, m *mail.Mail, l string) {
 		return
 	}
 	switch tr {
+	default:
+		// ignore and do nothing
+		go m.CallWebHook(map[string]string{
+			"event": "dropped",
+			"log":   l,
+		})
+		dp.SetAvailable()
+		SetMailSent(m)
+
 	case "resendLater":
 		go func() {
 			// sender will be available after one minute
@@ -63,13 +59,5 @@ func errorHandle(dp *DomainProcessor, m *mail.Mail, l string) {
 		log.Printf("mail %s is resending now.", m.Id)
 		dp.SetAvailable()
 		HandleMail(m)
-
-	case "ignore":
-		go m.CallWebHook(map[string]string{
-			"event": "dropped",
-			"log":   l,
-		})
-		dp.SetAvailable()
-		SetMailSent(m)
 	}
 }

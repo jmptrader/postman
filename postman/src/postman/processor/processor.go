@@ -54,7 +54,7 @@ func ArrangeMail(m *mail.Mail) {
 	addr := m.Addr()
 	size, err := store.RPush(queuePrefix+addr, []string{m.Id})
 	if err != nil {
-		log.Fatalf("processor: arrange mail", err.Error())
+		log.Fatalf("processor: arrange mail %s", err.Error())
 	}
 	if size == 1 {
 		go CreateProcessor(addr)
@@ -64,9 +64,9 @@ func ArrangeMail(m *mail.Mail) {
 
 func HandleMail(m *mail.Mail) {
 	addr := m.Addr()
-	size, err := store.RPush(queuePrefix+addr, []string{m.Id})
+	size, err := store.LPush(queuePrefix+addr, []string{m.Id})
 	if err != nil {
-		log.Fatalf("processor: arrange mail", err.Error())
+		log.Fatalf("processor: handle mail %s", err.Error())
 	}
 	if size == 1 {
 		go CreateProcessor(addr)
@@ -178,6 +178,7 @@ Loop:
 	store.Add(dp.sendingSet, messageId)
 	if !dp.CheckSender() {
 		ticker := time.NewTicker(GetDeliverInterval(dp.Domain) / 3)
+		// TODO: loop here can be replaced with channel someday.
 		for _ = range ticker.C {
 			if dp.CheckSender() {
 				ticker.Stop()
@@ -189,6 +190,7 @@ Send:
 	log.Printf("mail: %s for %s find sender.", messageId, mail.To)
 	go dp.CreateSender(mail)
 	wait := time.NewTimer(GetDeliverInterval(dp.Domain))
+	log.Print(wait)
 	<-wait.C
 	goto Loop
 }
