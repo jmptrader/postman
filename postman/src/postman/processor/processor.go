@@ -190,7 +190,6 @@ Send:
 	log.Printf("mail: %s for %s find sender.", messageId, mail.To)
 	go dp.CreateSender(mail)
 	wait := time.NewTimer(GetDeliverInterval(dp.Domain))
-	log.Print(wait)
 	<-wait.C
 	goto Loop
 }

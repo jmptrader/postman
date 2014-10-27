@@ -20,7 +20,7 @@
             = content_tag 'i', '', class: 'bug icon'
             = 'Exceptions'
             - if @unknown_exception_count > 0
-              = content_tag 'span', @unknown_exception_count, class: 'ui red label small'
+              = content_tag 'span', @unknown_exception_count, class: 'ui red label small', id: 'unknownExceptionCount'
 
       = yield
 

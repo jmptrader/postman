@@ -14,7 +14,7 @@ import (
 
 const (
 	DEFAULT_DB_DIR     = "./data"
-	DEFAULT_CONFIG_DIR = "./config"
+	DEFAULT_CONFIG_DIR = "."
 	CLIENT_PRIVATE_KEY = "sys:private"
 )
 
@@ -78,10 +78,6 @@ func configInit() {
 			}
 		}
 	}
-	configDir = os.Getenv("POSTMAN_CONFIG_DIR")
-	if len(configDir) < 1 {
-		dbDir = DEFAULT_CONFIG_DIR
-	}
 	config, err = loadConfig()
 	if err != nil {
 		log.Fatalf("load config file %s", err.Error())
@@ -92,6 +88,10 @@ func configInit() {
 // exit with error if meet any error
 func loadConfig() (Config, error) {
 	c := Config{}
+	configDir = os.Getenv("POSTMAN_CONFIG_DIR")
+	if len(configDir) < 1 {
+		configDir = DEFAULT_CONFIG_DIR
+	}
 	configFile, err := ioutil.ReadFile(configDir + "/config.json")
 	if err != nil {
 		return c, err

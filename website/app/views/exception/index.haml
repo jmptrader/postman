@@ -1,0 +1,32 @@
+.row
+  .four.wide.column
+    .ui.vertical.pointing.menu#nav-currentStatus
+      %a.item.type-all(href="?type=all" )
+        All
+      %a.item.type-unknown(href="?type=unknown")
+        Unknown
+        - if @unknown_exception_count > 0
+          = content_tag 'span', @unknown_exception_count, class: 'ui red label'
+  .twelve.wide.column
+    %table.ui.table.segment.sender-list
+      %thead
+        %tr
+          %th.ten.wide.column Log
+          %th.four.wide.column Treatment
+          %th(style="" ) Action
+      %tbody
+        -@exceptions.each do |exception|
+          = form_for :exception, url(:exception, :update, id: exception.id) do |f|
+            %tr{class: ('warning' if exception.is_new)}
+              %td= exception.content
+              %td
+                = f.select :treatment, options: {Ignore: 'ignore', :'Resend Later'=> 'resendLater', :'Resend Now(not recommend)'=> 'resendNow'}, selected: exception.treatment.to_sym
+              %td
+                %button.ui.mini.blue.submit.button Confirm
+        - if @exceptions.size == 0
+          %tr
+            %td(colspan="4")
+              No record found
+
+- content_for :javascript do
+  = javascript_include_tag 'exception/index'
