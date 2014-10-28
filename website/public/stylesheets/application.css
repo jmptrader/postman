@@ -41,3 +41,14 @@ body {
 .red a:hover {
     color: #FFCB08;
 }
+
+.api-form {
+    background: #F8F8F8;
+    border: 1px solid #f0f0f0;
+    box-sizing: border-box;
+    padding: 1.3% 3% 0;
+}
+
+.api-demos .content {
+    padding: 0 2em!important;
+}

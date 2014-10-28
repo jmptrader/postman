@@ -49,8 +49,9 @@ Website::App.controllers :sender do
 
   get :dashboard, map: '/sender/:id' do
     @title = 'dashboard'
+    @api_addr = "http://#{settings.api_addr}"
     haml :'layouts/dashboard', layout: :application do
-      haml :'sender/getting_started', layout: false
+      haml :'sender/index', layout: false
     end
   end
 

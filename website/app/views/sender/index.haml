@@ -1,0 +1,4 @@
+- if @sender.status == 'unverified'
+  = partial 'sender/check_dns'
+- else
+  = partial 'sender/getting_started'

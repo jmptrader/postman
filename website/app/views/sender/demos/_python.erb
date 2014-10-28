@@ -1,0 +1,24 @@
+<pre>
+  <code class="python">import hashlib
+import json
+import requests
+import time
+
+m = hashlib.md5()
+params = json.dumps({
+    'from': 'JianXin &lt;no-reply@<%= @sender.domain %>&gt;',
+    'to': 'someone@domain.com',
+    'subject': 'Hello',
+    'text': 'Testing some Jianxin awesomeness!',
+    'html': '&lt;p&gt;Testing some Jianxin awesomeness!&lt;/p&gt;',
+    'expire': str(time.time() + 10)
+})
+
+m.update(params.lower() + '<%= @sender.api_key %>')
+
+payload = {
+    'params': params,
+    'secret': m.hexdigest()
+}
+
+requests.post("<%= @api_addr %>/<%= @sender.domain %>/message", data=payload)</code></pre>

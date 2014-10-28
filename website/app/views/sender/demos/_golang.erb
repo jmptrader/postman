@@ -1,0 +1,44 @@
+<pre>
+  <code class="golang">package main
+
+import (
+    "crypto/md5"
+    "encoding/hex"
+    "encoding/json"
+    "fmt"
+    "net/http"
+    "net/url"
+    "strconv"
+    "strings"
+    "time"
+)
+
+func md5Encode(text string) string {
+    hasher := md5.New()
+    hasher.Write([]byte(text))
+    return hex.EncodeToString(hasher.Sum(nil))
+}
+
+func main() {
+    params := map[string]string{
+        "from":    "JianXin &lt;no-reply@<%= @sender.domain %>&gt;",
+        "to":      "someone@domain.com",
+        "subject": "Hello",
+        "text":    "Testing some Jianxin awesomeness!",
+        "html":    "&lt;p&gt;Testing some Jianxin awesomeness!&lt;/p&gt;",
+        "expire":  strconv.FormatInt(time.Now().Unix()+10, 10),
+    }
+    paramsByte, _ := json.Marshal(params)
+
+    res, err := http.PostForm("<%= @api_addr %>/<%= @sender.domain %>/message", url.Values{
+        "params": {string(paramsByte)},
+        "secret": {md5Encode(strings.ToLower(string(paramsByte)) + "<%= @sender.api_key %>")},
+    })
+
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    defer res.Body.Close()
+}</code>
+</pre>

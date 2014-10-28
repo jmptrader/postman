@@ -1,0 +1,22 @@
+<pre>
+  <code class="ruby">require 'digest'
+require 'json'
+require 'faraday'
+
+expire = Time.now.to_i + 10
+params = {
+    from: 'JianXin &lt;no-reply@<%= @sender.domain %>&gt;',
+    to: 'someone@domain.com',
+    subject: 'Hello',
+    text: 'Testing some Jianxin awesomeness!',
+    html: '&lt;p&gt;Testing some Jianxin awesomeness!&lt;/p&gt;',
+    expire: expire,
+}.to_json
+
+secret = Digest::MD5.new
+secret.update "#{params.downcase}<%= @sender.api_key %>"
+
+Faraday.post '<%= @api_addr %>/<%= @sender.domain %>/message', {
+    params: params,
+    secret: secret.hexdigest
+}</code></pre>

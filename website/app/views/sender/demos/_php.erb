@@ -1,0 +1,27 @@
+<pre>
+  <code class="php">&lt;?php
+
+$params = json_encode(array(
+    'from'    => 'JianXin &lt;no-reply@<%= @sender.domain %>&gt;',
+    'to'      => 'someone@domain.com',
+    'subject' => 'Hello',
+    'text'    => 'Testing some Jianxin awesomeness!',
+    'html'    => '&lt;p&gt;Testing some Jianxin awesomeness!&lt;/p&gt;',
+    'expire'  => time() + 10
+));
+
+$secret = strtolower($params) . "<%= @sender.api_key %>";
+
+$curlPost = array(
+    'params' => $params,
+    'secret' => md5($secret)
+);
+
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL,'<%= @api_addr %>/<%= @sender.domain %>/message');
+curl_setopt($ch, CURLOPT_POST, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $curlPost);
+curl_exec($ch);
+curl_close($ch);
+
+?></code></pre>

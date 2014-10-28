@@ -51,9 +51,9 @@ func errorHandle(dp *DomainProcessor, m *mail.Mail, l string) {
 		}
 		// Set a timer to resend mail
 		<-time.After(retryInterval[m.Retries])
+		log.Printf("mail: %s will resend soon.", m.Id)
 		m.Retries += 1
 		m.Update()
-		log.Printf("mail: %s will resend soon.", m.Id)
 		ArrangeMail(m)
 
 	case "resendNow":

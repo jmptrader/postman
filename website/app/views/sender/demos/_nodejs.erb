@@ -1,0 +1,23 @@
+<pre>
+  <code class="nodejs">var request = require('request');
+var crypto = require('crypto');
+
+var params = {
+    from:    'JianXin &lt;no-reply@<%= @sender.domain %>&gt;',
+    to:      'someone@domain.com',
+    subject: 'Hello',
+    text:    'Testing some Jianxin awesomeness!',
+    html:    '&lt;p&gt;Testing some Jianxin awesomeness!&lt;/p&gt;',
+    expire:  Math.round(new Date().getTime() / 1000) + 10
+}
+
+var expire = Math.round(new Date().getTime() / 1000) + 10;
+var params_str = JSON.stringify(params);
+var secret = crypto.createHash('md5').update(
+    params_str.toLowerCase() + '<%= @sender.api_key %>'
+).digest('hex');
+
+request.post('<%= @api_addr %>/<%= @sender.domain %>/message', {form: {
+    params: params_str,
+    secret: secret
+}});</code></pre>

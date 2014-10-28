@@ -1,0 +1,30 @@
+.ui.success.message
+  %i.close.icon
+  Now, let's send message to the world.
+
+.ui.fluid.accordion.api-demos
+  - %w(Ruby Python Nodejs PHP Golang).each do |lang|
+    .title
+      %i.dropdown.icon
+      = lang
+    .content
+      = preserve do
+        =partial "sender/demos/#{lang.downcase}".to_sym
+
+%h3.ui.header
+  %i.book.icon
+  Usage
+
+.ui.form.api-form
+  .fields
+    .six.wide.field
+      %label
+        Domain:
+      =input_tag 'text', disabled: true, value: @sender.domain
+
+    .ten.wide.field
+      %label
+        API-KEY:
+      =input_tag 'text', disabled: true, value: @sender.api_key
+
+%p coming soon...
