@@ -32,6 +32,7 @@ func errorHandle(dp *DomainProcessor, m *mail.Mail, l string) {
 		})
 		dp.SetAvailable()
 		SetMailSent(m)
+		return
 
 	case "resendLater":
 		go func() {
@@ -45,7 +46,7 @@ func errorHandle(dp *DomainProcessor, m *mail.Mail, l string) {
 				"event": "dropped",
 				"error": m.Log,
 			})
-			m.Destroy()
+			SetMailSent(m)
 			return
 		}
 		// Set a timer to resend mail
@@ -56,8 +57,18 @@ func errorHandle(dp *DomainProcessor, m *mail.Mail, l string) {
 		ArrangeMail(m)
 
 	case "resendNow":
+		if m.Retries > 2 {
+			go m.CallWebHook(map[string]string{
+				"event": "dropped",
+				"error": m.Log,
+			})
+			SetMailSent(m)
+			return
+		}
 		log.Printf("mail %s is resending now.", m.Id)
-		dp.SetAvailable()
+		m.Retries += 1
+		m.Update()
 		HandleMail(m)
+		dp.SetAvailable()
 	}
 }
