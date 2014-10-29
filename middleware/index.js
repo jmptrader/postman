@@ -13,8 +13,8 @@ require('./core/command');
 
 var options = {
     requestCert: true,
-    key: fs.readFileSync('../config/pems/middleware/private-key.pem'),
-    cert: fs.readFileSync('../config/pems/middleware/public-cert.pem')
+    key: fs.readFileSync('../config/pems/middleware/privkey.pem'),
+    cert: fs.readFileSync('../config/pems/middleware/cert.pem')
 };
 
 // start server and load core
