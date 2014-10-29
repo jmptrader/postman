@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/jpoz/dkim"
 
@@ -79,7 +78,6 @@ func (m *Mail) CallWebHook(params map[string]string) (err error) {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	httpClient := &http.Client{
-		Timeout:   time.Second * 20,
 		Transport: tr,
 	}
 	v := url.Values{}

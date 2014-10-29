@@ -33,3 +33,4 @@ config.json
 database.json
 domain.json
 postman/src/postman/main/postman/postman
+postman/vendor/src/github.com/

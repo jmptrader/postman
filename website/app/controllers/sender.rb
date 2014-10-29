@@ -49,7 +49,7 @@ Website::App.controllers :sender do
 
   get :dashboard, map: '/sender/:id' do
     @title = 'dashboard'
-    @api_addr = "http://#{settings.api_addr}"
+    @api_addr = settings.api_addr
     haml :'layouts/dashboard', layout: :application do
       haml :'sender/index', layout: false
     end
@@ -134,7 +134,7 @@ Website::App.controllers :sender do
 
   get :logs, map: '/sender/:id/logs' do
     @title = 'logs'
-    @api_addr = "http://#{settings.api_addr}"
+    @api_addr = settings.api_addr
     haml :'layouts/dashboard', layout: :application do
       haml :'sender/logs', layout: false
     end

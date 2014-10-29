@@ -36,7 +36,7 @@ Padrino.configure_apps do
 
   domain = JSON.parse(IO.read(Padrino.root('../config/domain.json')))
   set :middleware_addr, "#{domain['middleware']['domain']}:#{domain['middleware']['port']}"
-  set :api_addr, "#{domain['api']['domain']}:#{domain['api']['port']}"
+  set :api_addr, "#{domain['api']['protocol']}://#{domain['api']['domain']}:#{domain['api']['port']}"
 end
 # Mounts the core application for this project
 Padrino.mount('Website::App', :app_file => Padrino.root('app/app.rb')).to('/')
